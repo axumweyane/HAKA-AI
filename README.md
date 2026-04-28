@@ -275,6 +275,41 @@ python3 haka_invoice.py --paid HAKA-2026-001
 
 **Invoice includes:** HAKA Security header, invoice/dates, client info, line items, subtotal, 15% VAT (Ethiopia), total, payment instructions, professional footer. Numbering: `HAKA-YYYY-NNN`.
 
+#### `haka_proposal.py` — Proposal Generator
+
+Generates customized cybersecurity assessment proposals from CRM data using the proposal template.
+
+```bash
+# Generate a proposal from a CRM engagement
+python3 haka_proposal.py --engagement 1 --output proposals/CBE_Proposal.md
+
+# Preview without saving
+python3 haka_proposal.py --engagement 1 --preview
+
+# List all generated proposals
+python3 haka_proposal.py --list
+
+# List available engagements in CRM
+python3 haka_proposal.py --list-engagements
+```
+
+**Features:** Reads client + engagement data from `~/.haka/haka_crm.db`, auto-generates proposal numbers (HAKA-PROP-YYYY-NNN), tailors scope and timeline to engagement type (external_assessment, full_pentest, quarterly_retainer, ir_retainer), outputs ready-to-send markdown proposals.
+
+---
+
+## Business Docs (`docs/`)
+
+Legal toolkit and business documentation for launching HAKA Security Consulting as an Ethiopian sole proprietorship.
+
+| Document | File | Description |
+|----------|------|-------------|
+| **Registration Checklist** | `haka_registration_checklist.md` | Step-by-step guide for registering a self-sponsored cybersecurity consultancy in Ethiopia — trade name, TIN, business license, bank account, VAT, NBE notification. Includes costs (ETB/USD), timelines, required documents, and government office directory. |
+| **NDA Template** | `NDA_Template.md` | Mutual Non-Disclosure Agreement template for Ethiopian banking clients. Fill-in-the-blanks format covering confidentiality definitions, exclusions, obligations, term, return of materials, and governing law (Ethiopia). Ready for client signature. |
+| **Proposal Template** | `Proposal_Template.md` | Professional cybersecurity assessment proposal with cover page, executive summary, scope of work, deliverables, timeline, pricing, and acceptance blocks. Uses `[FILL]` placeholders for customization. |
+| **Landing Page** | `landing_page.html` | Single-file responsive HTML landing page for HAKA Security. Dark theme with cyan accents, services cards, pricing tiers, and client section. Deployable to any static host — no frameworks. |
+
+**Usage flow:** Use the **registration checklist** to get legally set up → send the **NDA template** to prospective clients → generate a **proposal** from `haka_proposal.py` using CRM data → share the **landing page** as a professional online presence.
+
 ---
 
 ## Provider & Model Setup
@@ -364,6 +399,13 @@ HAKA-AI/
 │
 ├── haka_crm.py                  # Client & pipeline tracker
 ├── haka_invoice.py              # Invoice generator
+├── haka_proposal.py             # Proposal generator
+│
+├── docs/                        # Business legal toolkit
+│   ├── haka_registration_checklist.md
+│   ├── NDA_Template.md
+│   ├── Proposal_Template.md
+│   └── landing_page.html
 │
 ├── dashboard.html               # Web dashboard
 ├── dashboard_server.py          # Dashboard HTTP server
@@ -395,6 +437,44 @@ HAKA-AI/
 | Bank of Abyssinia | `haka_consolidated_boa.json` | 18 (6 CRIT, 12 HIGH) |
 | Telebirr | `haka_consolidated_telebirr.json` | 17 (7 CRIT, 10 HIGH) |
 | ETAF | `haka_consolidated_etaf.json` | 3 (3 HIGH) |
+
+---
+
+## Business Documents (`docs/`)
+
+Operational and legal templates for running HAKA as a consulting business.
+
+### Registration & Legal
+
+| Document | Description |
+|----------|-------------|
+| [`docs/haka_registration_checklist.md`](docs/haka_registration_checklist.md) | Step-by-step guide for registering HAKA as a sole proprietorship in Ethiopia (trade name, TIN, bank account, VAT). Includes costs, timelines, and office locations. |
+| [`docs/NDA_Template.md`](docs/NDA_Template.md) | Mutual Non-Disclosure Agreement template for engagements. Fill-in ready for client and HAKA signatures. |
+
+### Proposals & Sales
+
+| Tool | Description |
+|------|-------------|
+| [`haka_proposal.py`](haka_proposal.py) | Generate customized proposals from CRM data + the proposal template |
+| [`docs/Proposal_Template.md`](docs/Proposal_Template.md) | Professional cybersecurity assessment proposal with scope, pricing, terms |
+| [`haka_crm.py`](haka_crm.py) | Client & pipeline tracker — use before generating proposals |
+
+```bash
+# List available engagements
+python3 haka_proposal.py --list-engagements
+
+# Generate a proposal from CRM engagement #1
+python3 haka_proposal.py --engagement 1 --output proposals/CBE_Proposal.md
+
+# Preview without saving
+python3 haka_proposal.py --engagement 1 --preview
+```
+
+### Marketing
+
+| Document | Description |
+|----------|-------------|
+| [`docs/landing_page.html`](docs/landing_page.html) | Single-file responsive landing page. Dark theme, professional aesthetic. Deploy to any static host. |
 
 ---
 

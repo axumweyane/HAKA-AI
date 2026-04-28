@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAKA Security — Ethiopian Financial Sector Cybersecurity</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg: #0a0e17; --bg2: #111827; --card: #1a1f2e;
+            --text: #e2e8f0; --text2: #94a3b8; --text3: #64748b;
+            --accent: #00e5ff; --border: rgba(255,255,255,0.06);
+            --radius: 12px;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg); color: var(--text); line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+        body::before {
+            content: ''; position: fixed; inset: 0;
+            background: linear-gradient(rgba(0,229,255,0.015) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(0,229,255,0.015) 1px, transparent 1px);
+            background-size: 60px 60px; pointer-events: none; z-index: 0;
+        }
+        .container { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(10,14,23,0.85); backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+        }
+        nav .container { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+        .nav-logo { font-size: 1.5rem; font-weight: 800; color: var(--text); text-decoration: none; }
+        .nav-logo span { color: var(--accent); }
+        .nav-links { display: flex; gap: 32px; list-style: none; }
+        .nav-links a { color: var(--text2); text-decoration: none; font-size: 0.9rem; font-weight: 500; }
+        .nav-links a:hover { color: var(--accent); }
+
+        .hero { padding: 160px 0 100px; text-align: center; }
+        .hero-badge {
+            display: inline-block; margin-bottom: 24px;
+            background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.2);
+            color: var(--accent); font-size: 0.8rem; font-weight: 600;
+            padding: 6px 16px; border-radius: 100px; letter-spacing: 0.1em; text-transform: uppercase;
+        }
+        .hero h1 { font-size: 4rem; font-weight: 900; letter-spacing: 0.05em; margin-bottom: 8px; }
+        .hero .tagline { font-size: 1.25rem; color: var(--text2); max-width: 600px; margin: 0 auto 40px; }
+        .btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 14px 32px; border-radius: 8px; font-size: 0.95rem;
+            font-weight: 600; text-decoration: none; transition: all 0.2s;
+        }
+        .btn-primary { background: var(--accent); color: var(--bg); }
+        .btn-primary:hover { box-shadow: 0 0 30px rgba(0,229,255,0.3); transform: translateY(-1px); }
+        .btn-secondary { background: transparent; color: var(--accent); border: 1px solid rgba(0,229,255,0.3); }
+        .btn-secondary:hover { border-color: var(--accent); background: rgba(0,229,255,0.06); }
+
+        section { padding: 100px 0; }
+        .section-label { font-size: 0.8rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 12px; }
+        .section-title { font-size: 2.2rem; font-weight: 800; margin-bottom: 16px; }
+        .section-desc { color: var(--text2); font-size: 1.05rem; max-width: 600px; margin-bottom: 48px; }
+
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+        .card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 36px 28px; transition: all 0.3s;
+        }
+        .card:hover { background: #222839; border-color: rgba(0,229,255,0.15); transform: translateY(-2px); }
+        .card-icon { font-size: 2rem; margin-bottom: 20px; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; background: rgba(0,229,255,0.06); border-radius: 10px; }
+        .card h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 10px; }
+        .card p { color: var(--text2); font-size: 0.92rem; line-height: 1.7; }
+
+        .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+        .pricing-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 40px 28px; text-align: center; transition: all 0.3s; position: relative;
+        }
+        .pricing-card:hover { background: #222839; border-color: rgba(0,229,255,0.2); transform: translateY(-2px); }
+        .pricing-card.featured { border-color: rgba(0,229,255,0.25); background: linear-gradient(180deg, rgba(0,229,255,0.04) 0%, var(--card) 30%); }
+        .pricing-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+        .pricing-price { font-size: 2.4rem; font-weight: 900; color: var(--accent); margin-bottom: 4px; }
+        .pricing-period { font-size: 0.85rem; color: var(--text3); margin-bottom: 24px; }
+        .pricing-desc { color: var(--text2); font-size: 0.9rem; line-height: 1.7; margin-bottom: 28px; min-height: 90px; }
+        .pricing-card .btn { width: 100%; justify-content: center; }
+
+        .clients-bar { text-align: center; padding: 60px 0; }
+        .clients-count { font-size: 3.5rem; font-weight: 900; color: var(--accent); margin-bottom: 8px; }
+        .clients-label { color: var(--text2); font-size: 1rem; }
+
+        .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+        .contact-info h3 { font-size: 1.8rem; margin-bottom: 12px; }
+        .contact-info p { color: var(--text2); margin-bottom: 32px; }
+        .contact-email {
+            display: inline-flex; align-items: center; gap: 10px;
+            font-size: 1.1rem; color: var(--accent); text-decoration: none; font-weight: 600;
+            padding: 12px 24px; border: 1px solid rgba(0,229,255,0.2); border-radius: 8px;
+        }
+        .contact-email:hover { background: rgba(0,229,255,0.06); border-color: var(--accent); }
+        .contact-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 36px; }
+        .contact-card h4 { margin-bottom: 20px; font-size: 1.05rem; }
+        .contact-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); color: var(--text2); font-size: 0.9rem; }
+        .contact-item:last-child { border-bottom: none; }
+
+        footer { border-top: 1px solid var(--border); padding: 40px 0; text-align: center; }
+        footer .container { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+        footer p { color: var(--text3); font-size: 0.85rem; }
+        footer a { color: var(--accent); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .hero { padding: 120px 0 60px; }
+            section { padding: 60px 0; }
+            .section-title { font-size: 1.7rem; }
+            .contact-grid { grid-template-columns: 1fr; }
+            .nav-links { gap: 20px; }
+            footer .container { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <a href="#" class="nav-logo">HAKA <span>🦞</span></a>
+            <ul class="nav-links">
+                <li><a href="#services">Services</a></li>
+                <li><a href="#clients">Clients</a></li>
+                <li><a href="#pricing">Pricing</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-badge">Cybersecurity Consulting</div>
+            <h1>HAKA <span>🦞</span></h1>
+            <p class="tagline">Ethiopian Financial Sector Security Assessments.<br>Protecting the institutions that power Ethiopia's economy.</p>
+            <div class="hero-cta">
+                <a href="#contact" class="btn btn-primary">Get in Touch</a>
+                <a href="#services" class="btn btn-secondary">Our Services</a>
+            </div>
+        </div>
+    </section>
+
+    <section id="services">
+        <div class="container">
+            <div class="section-label">What We Do</div>
+            <h2 class="section-title">Security services tailored for finance</h2>
+            <p class="section-desc">We specialize in cybersecurity assessments for Ethiopia's banking, insurance, and telecommunications sectors.</p>
+
+            <div class="cards-grid">
+                <div class="card">
+                    <div class="card-icon">🔍</div>
+                    <h3>Vulnerability Assessment</h3>
+                    <p>Comprehensive external security scanning of internet-facing systems — DNS, email (SPF/DKIM/DMARC), TLS, web applications, VPN endpoints, and cloud infrastructure. Automated scans with manual validation and AI-driven reporting.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">⚔️</div>
+                    <h3>Penetration Testing</h3>
+                    <p>Full-scope adversarial simulation — external perimeter attacks, internal network pivoting, Active Directory assessment, privilege escalation, and lateral movement. MITRE ATT&CK mapped.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🛡️</div>
+                    <h3>Security Consulting</h3>
+                    <p>NBE regulatory compliance mapping, security architecture review, incident response planning, mobile app security analysis, and quarterly reassessment retainers.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="clients">
+        <div class="container">
+            <div class="clients-bar">
+                <div class="section-label">Our Clients</div>
+                <div class="clients-count">7</div>
+                <p class="clients-label">major financial and telecom institutions<br>assessed across Ethiopia</p>
+            </div>
+            <p style="text-align:center; color: var(--text3); max-width: 500px; margin: 0 auto; font-size: 0.9rem;">We maintain strict client confidentiality. Names are not disclosed without explicit permission — standard practice in security consulting.</p>
+        </div>
+    </section>
+
+    <section id="pricing">
+        <div class="container">
+            <div class="section-label">Services & Pricing</div>
+            <h2 class="section-title">Transparent pricing for every need</h2>
+            <p class="section-desc">All engagements include an executive summary, technical report, MITRE ATT&CK mapping, and AI-driven remediation roadmap.</p>
+
+            <div class="pricing-grid">
+                <div class="pricing-card featured">
+                    <div class="pricing-name">External Assessment</div>
+                    <div class="pricing-price">$5–8K</div>
+                    <div class="pricing-period">per engagement</div>
+                    <div class="pricing-desc">Full external vulnerability scan of your internet-facing infrastructure. DNS, email, web, TLS, cloud storage, certificate transparency. 2–3 week timeline.</div>
+                    <a href="#contact" class="btn btn-primary">Get Started</a>
+                </div>
+                <div class="pricing-card">
+                    <div class="pricing-name">Full Penetration Test</div>
+                    <div class="pricing-price">$15–25K</div>
+                    <div class="pricing-period">per engagement</div>
+                    <div class="pricing-desc">External + internal testing. AD enumeration, lateral movement, privilege escalation. Full adversarial simulation. 4–6 week timeline.</div>
+                    <a href="#contact" class="btn btn-secondary">Learn More</a>
+                </div>
+                <div class="pricing-card">
+                    <div class="pricing-name">Quarterly Retainer</div>
+                    <div class="pricing-price">$20–40K</div>
+                    <div class="pricing-period">per year</div>
+                    <div class="pricing-desc">Quarterly reassessments, continuous monitoring, priority advisory. Track remediation progress and catch new exposures before attackers do.</div>
+                    <a href="#contact" class="btn btn-secondary">Learn More</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact">
+        <div class="container">
+            <div class="contact-grid">
+                <div class="contact-info">
+                    <div class="section-label">Contact</div>
+                    <h3>Let's talk security</h3>
+                    <p>We conduct preliminary assessments of publicly accessible infrastructure at no cost. See where you stand before you commit.</p>
+                    <a href="#" class="contact-email">✉️ [your-email]@haka.et</a>
+                </div>
+                <div class="contact-card">
+                    <h4>HAKA Security Consulting</h4>
+                    <div class="contact-item">📍 Addis Ababa, Ethiopia</div>
+                    <div class="contact-item">📱 [Your Phone]</div>
+                    <div class="contact-item">🔗 <a href="https://github.com/axumweyane/HAKA-AI">github.com/axumweyane/HAKA-AI</a></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 HAKA Security Consulting. All rights reserved.</p>
+            <p><a href="https://github.com/axumweyane/HAKA-AI">Open Source Platform</a> &middot; MIT Licensed</p>
+        </div>
+    </footer>
+</body>
+</html>
