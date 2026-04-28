@@ -1,0 +1,10 @@
+<group name="haka,">
+<rule id="100650" level="10" frequency="10" timeframe="60">
+  <if_matched_sid>31100</if_matched_sid>
+  <url>/api/v4/users/login</url>
+  <match>POST</match>
+  <same_source_ip />
+  <description>HAKA: Mattermost brute force — 10+ login attempts from $(srcip) in 60s</description>
+  <group>haka,mattermost,bruteforce,T1110,</group>
+</rule>
+</group>

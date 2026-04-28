@@ -1,0 +1,8 @@
+<group name="haka,">
+<rule id="100510" level="12">
+  <if_sid>12100</if_sid>
+  <match>type AXFR</match>
+  <description>HAKA: DNS zone transfer (AXFR) attempt detected</description>
+  <group>haka,dns,recon,T1590,</group>
+</rule>
+</group>

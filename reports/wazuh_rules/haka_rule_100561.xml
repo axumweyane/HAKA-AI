@@ -1,0 +1,9 @@
+<group name="haka,">
+<rule id="100561" level="12">
+  <if_sid>31100</if_sid>
+  <match>PUT</match>
+  <url>\.php$|\.phtml$|\.phar$</url>
+  <description>HAKA: PHP file upload via PUT — $(url)</description>
+  <group>haka,web,upload,T1505.003,</group>
+</rule>
+</group>

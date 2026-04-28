@@ -1,0 +1,9 @@
+<group name="haka,">
+<rule id="100652" level="8">
+  <if_sid>31100</if_sid>
+  <url>/api/v4/posts/search</url>
+  <match>password|secret|token|credentials|api_key|private_key|ssh_key</match>
+  <description>HAKA: Mattermost sensitive keyword search — possible data discovery</description>
+  <group>haka,mattermost,data_exfil,T1213,</group>
+</rule>
+</group>

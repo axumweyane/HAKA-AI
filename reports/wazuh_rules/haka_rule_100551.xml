@@ -1,0 +1,8 @@
+<group name="haka,">
+<rule id="100551" level="14" frequency="5" timeframe="30">
+  <if_matched_sid>100550</if_matched_sid>
+  <same_source_ip />
+  <description>HAKA: Mass Kerberoasting — 5+ RC4 TGS requests from $(srcip) in 30s</description>
+  <group>haka,ad,kerberoasting,mass,T1558.003,</group>
+</rule>
+</group>

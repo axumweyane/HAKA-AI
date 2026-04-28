@@ -1,0 +1,9 @@
+<group name="haka,">
+<rule id="100501" level="10">
+  <if_sid>3601</if_sid>
+  <field name="data.srcip">\S+</field>
+  <description>HAKA: Email spoofing attempt detected — external IP $(data.srcip) sending as internal domain</description>
+  <group>haka,email,spoofing,T1566,</group>
+  <options>no_full_log</options>
+</rule>
+</group>

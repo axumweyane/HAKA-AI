@@ -1,0 +1,8 @@
+<group name="haka,">
+<rule id="100560" level="14">
+  <if_sid>31100</if_sid>
+  <url>cmd=|exec=|command=|shell=|c=whoami|c=id|c=uname|c=cat+/etc</url>
+  <description>HAKA: Webshell command execution pattern detected — $(url)</description>
+  <group>haka,web,webshell,command_exec,T1059,</group>
+</rule>
+</group>

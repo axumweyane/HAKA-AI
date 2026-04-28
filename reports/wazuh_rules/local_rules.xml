@@ -1,0 +1,267 @@
+<!-- HAKA AI - Wazuh Custom Detection Rules
+     Generated: 2026-04-09 08:24:50 UTC
+     Rules: 29
+     Framework: HAKA AI v1.0.0
+
+     Deploy: cp local_rules.xml /var/ossec/etc/rules/
+     Restart: systemctl restart wazuh-manager
+-->
+
+<group name="haka,">
+
+  <!-- Rule 100501: HAKA: Email spoofing attempt from external IP -->
+  <rule id="100501" level="10">
+    <if_sid>3601</if_sid>
+    <field name="data.srcip">\S+</field>
+    <description>HAKA: Email spoofing attempt detected — external IP $(data.srcip) sending as internal domain</description>
+    <group>haka,email,spoofing,T1566,</group>
+    <options>no_full_log</options>
+  </rule>
+
+  <!-- Rule 100502: HAKA: SMTP VRFY/EXPN user enumeration detected -->
+  <rule id="100502" level="8">
+    <if_sid>3601</if_sid>
+    <match>VRFY|EXPN</match>
+    <description>HAKA: SMTP VRFY/EXPN user enumeration attempt</description>
+    <group>haka,email,enumeration,T1589,</group>
+  </rule>
+
+  <!-- Rule 100510: HAKA: DNS zone transfer attempt (AXFR) -->
+  <rule id="100510" level="12">
+    <if_sid>12100</if_sid>
+    <match>type AXFR</match>
+    <description>HAKA: DNS zone transfer (AXFR) attempt detected</description>
+    <group>haka,dns,recon,T1590,</group>
+  </rule>
+
+  <!-- Rule 100511: HAKA: DNS brute force — 50+ queries in 60 seconds -->
+  <rule id="100511" level="10" frequency="50" timeframe="60">
+    <if_matched_sid>12100</if_matched_sid>
+    <same_source_ip />
+    <description>HAKA: DNS brute force — 50+ queries from $(srcip) in 60s</description>
+    <group>haka,dns,bruteforce,T1595,</group>
+  </rule>
+
+  <!-- Rule 100520: HAKA: NTLM relay — Network logon (EventID 4624, Type 3) -->
+  <rule id="100520" level="12">
+    <if_sid>60106</if_sid>
+    <field name="win.system.eventID">^4624$</field>
+    <field name="win.eventdata.logonType">^3$</field>
+    <field name="win.eventdata.authenticationPackageName">NTLM</field>
+    <description>HAKA: Potential NTLM relay — Network logon Type 3 via NTLM from $(win.eventdata.ipAddress)</description>
+    <group>haka,ad,ntlm_relay,T1557,</group>
+  </rule>
+
+  <!-- Rule 100521: HAKA: Resource-Based Constrained Delegation (RBCD) modified -->
+  <rule id="100521" level="14">
+    <if_sid>60106</if_sid>
+    <field name="win.system.eventID">^5136$</field>
+    <field name="win.eventdata.attributeLDAPDisplayName">msDS-AllowedToActOnBehalfOfOtherIdentity</field>
+    <description>HAKA: RBCD delegation attribute modified on $(win.eventdata.objectDN)</description>
+    <group>haka,ad,rbcd,privilege_escalation,T1134,</group>
+  </rule>
+
+  <!-- Rule 100530: HAKA: Password spraying pattern detected -->
+  <rule id="100530" level="10" frequency="10" timeframe="120">
+    <if_matched_sid>60122</if_matched_sid>
+    <same_source_ip />
+    <different_target_user />
+    <description>HAKA: Password spraying — 10+ failed logins to different accounts from $(srcip)</description>
+    <group>haka,auth,password_spray,T1110.003,</group>
+  </rule>
+
+  <!-- Rule 100531: HAKA: OWA cleartext logon over HTTP -->
+  <rule id="100531" level="8">
+    <if_sid>31100</if_sid>
+    <url>/owa/auth|/owa/auth.owa</url>
+    <match>POST</match>
+    <field name="data.protocol">^HTTP$</field>
+    <description>HAKA: OWA cleartext logon detected — credentials transmitted over HTTP</description>
+    <group>haka,exchange,owa,cleartext,T1078,</group>
+  </rule>
+
+  <!-- Rule 100540: HAKA: ProxyShell exploitation attempt (CVE-2021-34473) -->
+  <rule id="100540" level="15">
+    <if_sid>31100</if_sid>
+    <url>/autodiscover/autodiscover.json|/mapi/nspi|/mapi/emsmdb|/powershell</url>
+    <match>Email=autodiscover|/autodiscover.json.*@.*</match>
+    <description>HAKA: ProxyShell exploitation attempt on Exchange — $(url)</description>
+    <group>haka,exchange,proxyshell,exploit,T1190,</group>
+  </rule>
+
+  <!-- Rule 100541: HAKA: Exchange webshell access detected -->
+  <rule id="100541" level="15">
+    <if_sid>31100</if_sid>
+    <url>/aspnet_client/|/owa/auth/.*\.aspx</url>
+    <match>200</match>
+    <description>HAKA: Potential Exchange webshell accessed — $(url)</description>
+    <group>haka,exchange,webshell,T1505.003,</group>
+  </rule>
+
+  <!-- Rule 100550: HAKA: Kerberoasting — TGS request with RC4 encryption -->
+  <rule id="100550" level="12">
+    <if_sid>60106</if_sid>
+    <field name="win.system.eventID">^4769$</field>
+    <field name="win.eventdata.ticketEncryptionType">0x17</field>
+    <description>HAKA: Kerberoasting — TGS-REQ with RC4 (0x17) for $(win.eventdata.serviceName)</description>
+    <group>haka,ad,kerberoasting,T1558.003,</group>
+  </rule>
+
+  <!-- Rule 100551: HAKA: Mass Kerberoasting — multiple RC4 TGS requests -->
+  <rule id="100551" level="14" frequency="5" timeframe="30">
+    <if_matched_sid>100550</if_matched_sid>
+    <same_source_ip />
+    <description>HAKA: Mass Kerberoasting — 5+ RC4 TGS requests from $(srcip) in 30s</description>
+    <group>haka,ad,kerberoasting,mass,T1558.003,</group>
+  </rule>
+
+  <!-- Rule 100555: HAKA: AS-REP Roasting — pre-auth disabled account TGT request -->
+  <rule id="100555" level="12">
+    <if_sid>60106</if_sid>
+    <field name="win.system.eventID">^4768$</field>
+    <field name="win.eventdata.preAuthType">^0$</field>
+    <description>HAKA: AS-REP Roasting — TGT requested without pre-authentication for $(win.eventdata.targetUserName)</description>
+    <group>haka,ad,asrep_roast,T1558.004,</group>
+  </rule>
+
+  <!-- Rule 100560: HAKA: Webshell command execution pattern -->
+  <rule id="100560" level="14">
+    <if_sid>31100</if_sid>
+    <url>cmd=|exec=|command=|shell=|c=whoami|c=id|c=uname|c=cat+/etc</url>
+    <description>HAKA: Webshell command execution pattern detected — $(url)</description>
+    <group>haka,web,webshell,command_exec,T1059,</group>
+  </rule>
+
+  <!-- Rule 100561: HAKA: PHP file upload via PUT method -->
+  <rule id="100561" level="12">
+    <if_sid>31100</if_sid>
+    <match>PUT</match>
+    <url>\.php$|\.phtml$|\.phar$</url>
+    <description>HAKA: PHP file upload via PUT — $(url)</description>
+    <group>haka,web,upload,T1505.003,</group>
+  </rule>
+
+  <!-- Rule 100562: HAKA: phpinfo.php access — information disclosure -->
+  <rule id="100562" level="6">
+    <if_sid>31100</if_sid>
+    <url>phpinfo\.php</url>
+    <match>200</match>
+    <description>HAKA: phpinfo.php accessed successfully — information disclosure</description>
+    <group>haka,web,info_disclosure,T1592,</group>
+  </rule>
+
+  <!-- Rule 100570: HAKA: WordPress plugin exploitation attempt -->
+  <rule id="100570" level="12">
+    <if_sid>31100</if_sid>
+    <url>/wp-content/plugins/</url>
+    <match>POST|PUT</match>
+    <description>HAKA: WordPress plugin exploitation attempt — $(url)</description>
+    <group>haka,web,wordpress,exploit,T1190,</group>
+  </rule>
+
+  <!-- Rule 100571: HAKA: WordPress XML-RPC brute force -->
+  <rule id="100571" level="10" frequency="15" timeframe="60">
+    <if_matched_sid>31100</if_matched_sid>
+    <url>/xmlrpc.php</url>
+    <match>POST</match>
+    <same_source_ip />
+    <description>HAKA: WordPress XML-RPC brute force — 15+ POST requests in 60s from $(srcip)</description>
+    <group>haka,web,wordpress,bruteforce,T1110,</group>
+  </rule>
+
+  <!-- Rule 100580: HAKA: cPanel/WHM brute force login attempts -->
+  <rule id="100580" level="10" frequency="10" timeframe="120">
+    <if_matched_sid>31100</if_matched_sid>
+    <url>/login/?login_only=1|:2087/login|:2083/login</url>
+    <match>POST</match>
+    <same_source_ip />
+    <description>HAKA: cPanel/WHM brute force — 10+ login attempts from $(srcip) in 120s</description>
+    <group>haka,web,cpanel,bruteforce,T1110,</group>
+  </rule>
+
+  <!-- Rule 100590: HAKA: Sensitive file access attempt -->
+  <rule id="100590" level="10">
+    <if_sid>31100</if_sid>
+    <url>\.env$|\.git/config|wp-config\.php\.bak|/etc/passwd|/etc/shadow|\.htpasswd|web\.config|\.DS_Store</url>
+    <description>HAKA: Sensitive file access attempt — $(url)</description>
+    <group>haka,web,sensitive_file,T1083,</group>
+  </rule>
+
+  <!-- Rule 100595: HAKA: WordPress user enumeration via REST/author -->
+  <rule id="100595" level="8">
+    <if_sid>31100</if_sid>
+    <url>/wp-json/wp/v2/users|/?author=</url>
+    <description>HAKA: WordPress user enumeration via REST API or author parameter</description>
+    <group>haka,web,wordpress,enumeration,T1589,</group>
+  </rule>
+
+  <!-- Rule 100600: HAKA: S3 bucket external/anonymous access detected -->
+  <rule id="100600" level="10">
+    <if_sid>80350</if_sid>
+    <field name="aws.source">s3</field>
+    <field name="aws.userIdentity.type">AWSAccount|Anonymous</field>
+    <description>HAKA: S3 bucket accessed by external/anonymous identity — $(aws.s3.bucket)</description>
+    <group>haka,cloud,s3,external_access,T1530,</group>
+  </rule>
+
+  <!-- Rule 100610: HAKA: Exchange endpoint scanning/enumeration -->
+  <rule id="100610" level="8" frequency="5" timeframe="30">
+    <if_matched_sid>31100</if_matched_sid>
+    <url>/owa|/ecp|/ews|/oab|/autodiscover|/mapi|/rpc|/powershell|/Microsoft-Server-ActiveSync</url>
+    <same_source_ip />
+    <description>HAKA: Exchange endpoint scanning — 5+ Exchange URLs probed from $(srcip)</description>
+    <group>haka,exchange,recon,T1595,</group>
+  </rule>
+
+  <!-- Rule 100620: HAKA: VPN brute force login attempts -->
+  <rule id="100620" level="10" frequency="10" timeframe="120">
+    <if_matched_sid>4716</if_matched_sid>
+    <same_source_ip />
+    <description>HAKA: VPN brute force — 10+ failed VPN logins from $(srcip) in 120s</description>
+    <group>haka,vpn,bruteforce,T1110,</group>
+  </rule>
+
+  <!-- Rule 100630: HAKA: Deprecated TLS version in use (TLSv1.0/1.1/SSLv3) -->
+  <rule id="100630" level="8">
+    <if_sid>31100</if_sid>
+    <field name="data.tls_version">TLSv1$|TLSv1\.0|TLSv1\.1|SSLv3</field>
+    <description>HAKA: Deprecated TLS version $(data.tls_version) negotiated — weak cryptography</description>
+    <group>haka,tls,crypto,deprecated,T1573,</group>
+  </rule>
+
+  <!-- Rule 100640: HAKA: Internal hostname leaked in external DNS query -->
+  <rule id="100640" level="6">
+    <if_sid>12100</if_sid>
+    <field name="data.query">\.internal$|\.local$|\.corp$|\.lan$|\.home$</field>
+    <description>HAKA: Internal hostname in DNS query — $(data.query) may leak internal topology</description>
+    <group>haka,dns,info_leak,T1590,</group>
+  </rule>
+
+  <!-- Rule 100650: HAKA: Mattermost brute force login attempts -->
+  <rule id="100650" level="10" frequency="10" timeframe="60">
+    <if_matched_sid>31100</if_matched_sid>
+    <url>/api/v4/users/login</url>
+    <match>POST</match>
+    <same_source_ip />
+    <description>HAKA: Mattermost brute force — 10+ login attempts from $(srcip) in 60s</description>
+    <group>haka,mattermost,bruteforce,T1110,</group>
+  </rule>
+
+  <!-- Rule 100651: HAKA: Mattermost config extraction attempt -->
+  <rule id="100651" level="12">
+    <if_sid>31100</if_sid>
+    <url>/api/v4/config|/api/v4/config/client</url>
+    <match>GET|200</match>
+    <description>HAKA: Mattermost configuration extraction — $(url)</description>
+    <group>haka,mattermost,config,T1005,</group>
+  </rule>
+
+  <!-- Rule 100652: HAKA: Mattermost sensitive keyword search -->
+  <rule id="100652" level="8">
+    <if_sid>31100</if_sid>
+    <url>/api/v4/posts/search</url>
+    <match>password|secret|token|credentials|api_key|private_key|ssh_key</match>
+    <description>HAKA: Mattermost sensitive keyword search — possible data discovery</description>
+    <group>haka,mattermost,data_exfil,T1213,</group>
+  </rule>
+</group>

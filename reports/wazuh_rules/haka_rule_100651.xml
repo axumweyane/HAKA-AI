@@ -1,0 +1,9 @@
+<group name="haka,">
+<rule id="100651" level="12">
+  <if_sid>31100</if_sid>
+  <url>/api/v4/config|/api/v4/config/client</url>
+  <match>GET|200</match>
+  <description>HAKA: Mattermost configuration extraction — $(url)</description>
+  <group>haka,mattermost,config,T1005,</group>
+</rule>
+</group>

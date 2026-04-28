@@ -1,0 +1,9 @@
+<group name="haka,">
+<rule id="100562" level="6">
+  <if_sid>31100</if_sid>
+  <url>phpinfo\.php</url>
+  <match>200</match>
+  <description>HAKA: phpinfo.php accessed successfully — information disclosure</description>
+  <group>haka,web,info_disclosure,T1592,</group>
+</rule>
+</group>

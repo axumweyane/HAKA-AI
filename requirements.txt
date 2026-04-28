@@ -1,0 +1,22 @@
+# HAKA AI - Security Assessment Framework
+# Core dependencies (required for all tools)
+colorama>=0.4.6
+dnspython>=2.4.0
+requests>=2.31.0
+cryptography>=41.0.0
+beautifulsoup4>=4.12.0
+pandas>=2.0.0
+jinja2>=3.1.0
+
+# Optional - Enhanced functionality
+boto3>=1.28.0            # haka_s3_scanner.py - S3 bucket scanning
+python-evtx>=0.7.4       # haka_spray_detector.py, haka_kerberos_detector.py - EVTX log parsing
+ldap3>=2.9.1             # haka_kerberos_detector.py - Active Directory LDAP queries
+certstream>=1.12.0       # haka_ct_scanner.py - Real-time CT monitoring
+tqdm>=4.65.0             # haka_ai.py - Progress bars
+PyYAML>=6.0              # haka_ai.py - YAML config support
+urllib3>=2.0.0           # HTTP connection pooling and retry
+
+# Already in Python stdlib (no install needed):
+# ssl, socket, smtplib, struct, base64, argparse, json, xml.etree.ElementTree
+# concurrent.futures, collections, datetime, hashlib, re, ipaddress

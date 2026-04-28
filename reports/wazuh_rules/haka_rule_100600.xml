@@ -1,0 +1,9 @@
+<group name="haka,">
+<rule id="100600" level="10">
+  <if_sid>80350</if_sid>
+  <field name="aws.source">s3</field>
+  <field name="aws.userIdentity.type">AWSAccount|Anonymous</field>
+  <description>HAKA: S3 bucket accessed by external/anonymous identity — $(aws.s3.bucket)</description>
+  <group>haka,cloud,s3,external_access,T1530,</group>
+</rule>
+</group>

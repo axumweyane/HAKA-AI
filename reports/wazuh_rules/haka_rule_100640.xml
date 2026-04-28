@@ -1,0 +1,8 @@
+<group name="haka,">
+<rule id="100640" level="6">
+  <if_sid>12100</if_sid>
+  <field name="data.query">\.internal$|\.local$|\.corp$|\.lan$|\.home$</field>
+  <description>HAKA: Internal hostname in DNS query — $(data.query) may leak internal topology</description>
+  <group>haka,dns,info_leak,T1590,</group>
+</rule>
+</group>

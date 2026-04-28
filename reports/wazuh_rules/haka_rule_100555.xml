@@ -1,0 +1,9 @@
+<group name="haka,">
+<rule id="100555" level="12">
+  <if_sid>60106</if_sid>
+  <field name="win.system.eventID">^4768$</field>
+  <field name="win.eventdata.preAuthType">^0$</field>
+  <description>HAKA: AS-REP Roasting — TGT requested without pre-authentication for $(win.eventdata.targetUserName)</description>
+  <group>haka,ad,asrep_roast,T1558.004,</group>
+</rule>
+</group>

@@ -1,0 +1,8 @@
+<group name="haka,">
+<rule id="100502" level="8">
+  <if_sid>3601</if_sid>
+  <match>VRFY|EXPN</match>
+  <description>HAKA: SMTP VRFY/EXPN user enumeration attempt</description>
+  <group>haka,email,enumeration,T1589,</group>
+</rule>
+</group>

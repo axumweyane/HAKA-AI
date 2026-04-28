@@ -1,0 +1,9 @@
+<group name="haka,">
+<rule id="100610" level="8" frequency="5" timeframe="30">
+  <if_matched_sid>31100</if_matched_sid>
+  <url>/owa|/ecp|/ews|/oab|/autodiscover|/mapi|/rpc|/powershell|/Microsoft-Server-ActiveSync</url>
+  <same_source_ip />
+  <description>HAKA: Exchange endpoint scanning — 5+ Exchange URLs probed from $(srcip)</description>
+  <group>haka,exchange,recon,T1595,</group>
+</rule>
+</group>

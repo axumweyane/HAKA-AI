@@ -1,0 +1,8 @@
+<group name="haka,custom,">
+<rule id="100700" level="10" frequency="10" timeframe="120">
+  <if_matched_sid>5710</if_matched_sid>
+  <same_source_ip />
+  <description>HAKA Custom: SSH brute force — 10+ failed SSH logins from $(srcip) in 120s</description>
+  <group>haka,custom,ssh,bruteforce,T1110,</group>
+</rule>
+</group>

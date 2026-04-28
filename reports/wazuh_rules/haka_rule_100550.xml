@@ -1,0 +1,9 @@
+<group name="haka,">
+<rule id="100550" level="12">
+  <if_sid>60106</if_sid>
+  <field name="win.system.eventID">^4769$</field>
+  <field name="win.eventdata.ticketEncryptionType">0x17</field>
+  <description>HAKA: Kerberoasting — TGS-REQ with RC4 (0x17) for $(win.eventdata.serviceName)</description>
+  <group>haka,ad,kerberoasting,T1558.003,</group>
+</rule>
+</group>

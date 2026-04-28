@@ -1,0 +1,256 @@
+========================================================================
+HAKA AI - Wazuh Detection Rules Documentation
+Generated: 2026-04-09 08:24:50 UTC
+Total rules: 29
+========================================================================
+
+Rule ID:     100501
+Level:       10
+Description: HAKA: Email spoofing attempt from external IP
+MITRE ATT&CK: T1566
+Category:    email
+Groups:      haka, email, spoofing, T1566
+--------------------------------------------------
+
+Rule ID:     100502
+Level:       8
+Description: HAKA: SMTP VRFY/EXPN user enumeration detected
+MITRE ATT&CK: T1589
+Category:    email
+Groups:      haka, email, enumeration, T1589
+--------------------------------------------------
+
+Rule ID:     100510
+Level:       12
+Description: HAKA: DNS zone transfer attempt (AXFR)
+MITRE ATT&CK: T1590
+Category:    dns
+Groups:      haka, dns, recon, T1590
+--------------------------------------------------
+
+Rule ID:     100511
+Level:       10
+Description: HAKA: DNS brute force — 50+ queries in 60 seconds
+MITRE ATT&CK: T1595
+Category:    dns
+Groups:      haka, dns, bruteforce, T1595
+--------------------------------------------------
+
+Rule ID:     100520
+Level:       12
+Description: HAKA: NTLM relay — Network logon (EventID 4624, Type 3)
+MITRE ATT&CK: T1557
+Category:    ad
+Groups:      haka, ad, ntlm_relay, T1557
+--------------------------------------------------
+
+Rule ID:     100521
+Level:       14
+Description: HAKA: Resource-Based Constrained Delegation (RBCD) modified
+MITRE ATT&CK: T1134
+Category:    ad
+Groups:      haka, ad, rbcd, T1134
+--------------------------------------------------
+
+Rule ID:     100530
+Level:       10
+Description: HAKA: Password spraying pattern detected
+MITRE ATT&CK: T1110.003
+Category:    auth
+Groups:      haka, auth, password_spray, T1110.003
+--------------------------------------------------
+
+Rule ID:     100531
+Level:       8
+Description: HAKA: OWA cleartext logon over HTTP
+MITRE ATT&CK: T1078
+Category:    exchange
+Groups:      haka, exchange, owa, cleartext, T1078
+--------------------------------------------------
+
+Rule ID:     100540
+Level:       15
+Description: HAKA: ProxyShell exploitation attempt (CVE-2021-34473)
+MITRE ATT&CK: T1190
+Category:    exchange
+Groups:      haka, exchange, proxyshell, exploit, T1190
+--------------------------------------------------
+
+Rule ID:     100541
+Level:       15
+Description: HAKA: Exchange webshell access detected
+MITRE ATT&CK: T1505.003
+Category:    exchange
+Groups:      haka, exchange, webshell, T1505.003
+--------------------------------------------------
+
+Rule ID:     100550
+Level:       12
+Description: HAKA: Kerberoasting — TGS request with RC4 encryption
+MITRE ATT&CK: T1558.003
+Category:    ad
+Groups:      haka, ad, kerberoasting, T1558.003
+--------------------------------------------------
+
+Rule ID:     100551
+Level:       14
+Description: HAKA: Mass Kerberoasting — multiple RC4 TGS requests
+MITRE ATT&CK: T1558.003
+Category:    ad
+Groups:      haka, ad, kerberoasting, T1558.003
+--------------------------------------------------
+
+Rule ID:     100555
+Level:       12
+Description: HAKA: AS-REP Roasting — pre-auth disabled account TGT request
+MITRE ATT&CK: T1558.004
+Category:    ad
+Groups:      haka, ad, asrep_roast, T1558.004
+--------------------------------------------------
+
+Rule ID:     100560
+Level:       14
+Description: HAKA: Webshell command execution pattern
+MITRE ATT&CK: T1059
+Category:    web
+Groups:      haka, web, webshell, T1059
+--------------------------------------------------
+
+Rule ID:     100561
+Level:       12
+Description: HAKA: PHP file upload via PUT method
+MITRE ATT&CK: T1505.003
+Category:    web
+Groups:      haka, web, upload, T1505.003
+--------------------------------------------------
+
+Rule ID:     100562
+Level:       6
+Description: HAKA: phpinfo.php access — information disclosure
+MITRE ATT&CK: T1592
+Category:    web
+Groups:      haka, web, info_disclosure, T1592
+--------------------------------------------------
+
+Rule ID:     100570
+Level:       12
+Description: HAKA: WordPress plugin exploitation attempt
+MITRE ATT&CK: T1190
+Category:    wordpress
+Groups:      haka, web, wordpress, exploit, T1190
+--------------------------------------------------
+
+Rule ID:     100571
+Level:       10
+Description: HAKA: WordPress XML-RPC brute force
+MITRE ATT&CK: T1110
+Category:    wordpress
+Groups:      haka, web, wordpress, bruteforce, T1110
+--------------------------------------------------
+
+Rule ID:     100580
+Level:       10
+Description: HAKA: cPanel/WHM brute force login attempts
+MITRE ATT&CK: T1110
+Category:    cpanel
+Groups:      haka, web, cpanel, bruteforce, T1110
+--------------------------------------------------
+
+Rule ID:     100590
+Level:       10
+Description: HAKA: Sensitive file access attempt
+MITRE ATT&CK: T1083
+Category:    web
+Groups:      haka, web, sensitive_file, T1083
+--------------------------------------------------
+
+Rule ID:     100595
+Level:       8
+Description: HAKA: WordPress user enumeration via REST/author
+MITRE ATT&CK: T1589
+Category:    wordpress
+Groups:      haka, web, wordpress, enumeration, T1589
+--------------------------------------------------
+
+Rule ID:     100600
+Level:       10
+Description: HAKA: S3 bucket external/anonymous access detected
+MITRE ATT&CK: T1530
+Category:    cloud
+Groups:      haka, cloud, s3, T1530
+--------------------------------------------------
+
+Rule ID:     100610
+Level:       8
+Description: HAKA: Exchange endpoint scanning/enumeration
+MITRE ATT&CK: T1595
+Category:    exchange
+Groups:      haka, exchange, recon, T1595
+--------------------------------------------------
+
+Rule ID:     100620
+Level:       10
+Description: HAKA: VPN brute force login attempts
+MITRE ATT&CK: T1110
+Category:    vpn
+Groups:      haka, vpn, bruteforce, T1110
+--------------------------------------------------
+
+Rule ID:     100630
+Level:       8
+Description: HAKA: Deprecated TLS version in use (TLSv1.0/1.1/SSLv3)
+MITRE ATT&CK: T1573
+Category:    tls
+Groups:      haka, tls, crypto, T1573
+--------------------------------------------------
+
+Rule ID:     100640
+Level:       6
+Description: HAKA: Internal hostname leaked in external DNS query
+MITRE ATT&CK: T1590
+Category:    dns
+Groups:      haka, dns, info_leak, T1590
+--------------------------------------------------
+
+Rule ID:     100650
+Level:       10
+Description: HAKA: Mattermost brute force login attempts
+MITRE ATT&CK: T1110
+Category:    mattermost
+Groups:      haka, mattermost, bruteforce, T1110
+--------------------------------------------------
+
+Rule ID:     100651
+Level:       12
+Description: HAKA: Mattermost config extraction attempt
+MITRE ATT&CK: T1005
+Category:    mattermost
+Groups:      haka, mattermost, config, T1005
+--------------------------------------------------
+
+Rule ID:     100652
+Level:       8
+Description: HAKA: Mattermost sensitive keyword search
+MITRE ATT&CK: T1213
+Category:    mattermost
+Groups:      haka, mattermost, data_exfil, T1213
+--------------------------------------------------
+
+
+DEPLOYMENT INSTRUCTIONS
+--------------------------------------------------
+1. Copy local_rules.xml to the Wazuh manager:
+   cp local_rules.xml /var/ossec/etc/rules/local_rules.xml
+
+2. Validate the configuration:
+   /var/ossec/bin/wazuh-logtest
+
+3. Restart the Wazuh manager:
+   systemctl restart wazuh-manager
+
+4. Verify rules are loaded:
+   /var/ossec/bin/wazuh-logtest  (paste a test log)
+
+NOTE: Back up your existing local_rules.xml before deploying.
+      Use --deploy with an existing file to merge rules safely.
+========================================================================

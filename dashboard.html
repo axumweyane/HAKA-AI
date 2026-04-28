@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HAKA AI — Security Operations Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f0f2f5;
+  --panel: #ffffff;
+  --panel2: #f7f8fa;
+  --border: #d0d7de;
+  --red: #cf222e;
+  --red-dim: #ff8182;
+  --orange: #bf5700;
+  --yellow: #9a6700;
+  --green: #116329;
+  --blue: #0550ae;
+  --text: #1f2328;
+  --text-dim: #656d76;
+  --text-bright: #0a0a0a;
+  --mono: 'Share Tech Mono', monospace;
+  --head: 'Orbitron', sans-serif;
+  --body: 'Rajdhani', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* SCANLINE OVERLAY — disabled for light mode */
+
+/* SIDEBAR */
+.sidebar {
+  width: 240px;
+  min-width: 240px;
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.logo {
+  padding: 20px 16px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.logo-ascii {
+  font-family: var(--mono);
+  font-size: 7px;
+  line-height: 1.2;
+  color: var(--red);
+  white-space: pre;
+  letter-spacing: 0;
+  text-shadow: none;
+}
+
+.logo-sub {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-dim);
+  margin-top: 6px;
+  letter-spacing: 2px;
+}
+
+.nav {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px;
+  font-family: var(--body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dim);
+  cursor: pointer;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: all 0.2s;
+  border-left: 2px solid transparent;
+}
+
+.nav-item:hover { color: var(--text); background: var(--panel2); }
+.nav-item.active { color: var(--red); border-left-color: var(--red); background: rgba(230,57,70,0.06); }
+
+.nav-icon { font-size: 14px; width: 18px; text-align: center; }
+
+.tools-list {
+  flex: 1;
+  padding: 12px 0;
+  overflow-y: auto;
+}
+
+.tools-list-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+  padding: 0 16px 8px;
+  text-transform: uppercase;
+}
+
+.tool-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tool-item:hover { color: var(--text); background: var(--panel2); }
+
+.tool-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-dim);
+}
+
+.tool-dot.installed { background: #1a7f37; }
+.tool-dot.missing { background: #cf222e; }
+
+/* MAIN */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.topbar {
+  height: 48px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  flex-shrink: 0;
+}
+
+.topbar-title {
+  font-family: var(--head);
+  font-size: 13px;
+  color: var(--text-bright);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+.topbar-meta {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  display: flex;
+  gap: 20px;
+}
+
+.status-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #1a7f37;
+  margin-right: 6px;
+  animation: blink 2s infinite;
+}
+
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+}
+
+/* PAGE VISIBILITY */
+.page { display: none; }
+.page.active { display: block; }
+
+/* DASHBOARD PAGE */
+.dash-grid {
+  display: grid;
+  grid-template-columns: 200px 1fr 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.risk-gauge {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  grid-row: span 2;
+}
+
+.gauge-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.gauge-circle {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: conic-gradient(var(--red) 0deg, var(--red) 0deg, var(--panel2) 0deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.gauge-inner {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.gauge-score {
+  font-family: var(--head);
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--red);
+  line-height: 1;
+}
+
+.gauge-max {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-dim);
+}
+
+.gauge-severity {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--red);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.stat-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+
+.stat-card.critical::before { background: var(--red); }
+.stat-card.high::before { background: var(--orange); }
+.stat-card.medium::before { background: var(--yellow); }
+.stat-card.low::before { background: var(--green); }
+
+.stat-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.stat-value {
+  font-family: var(--head);
+  font-size: 32px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.stat-card.critical { border-left: 3px solid var(--red); }
+.stat-card.high { border-left: 3px solid var(--orange); }
+.stat-card.medium { border-left: 3px solid var(--yellow); }
+.stat-card.low { border-left: 3px solid var(--green); }
+.stat-card.critical .stat-value { color: var(--red); }
+.stat-card.high .stat-value { color: var(--orange); }
+.stat-card.medium .stat-value { color: var(--yellow); }
+.stat-card.low .stat-value { color: var(--green); }
+
+.stat-sub {
+  font-family: var(--body);
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+/* SCAN HISTORY TABLE */
+.section-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.table-wrap {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+thead th {
+  background: var(--panel2);
+  padding: 8px 14px;
+  text-align: left;
+  color: var(--text-dim);
+  font-weight: normal;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-size: 9px;
+  border-bottom: 1px solid var(--border);
+}
+
+tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: var(--panel2); }
+
+tbody td {
+  padding: 9px 14px;
+  color: var(--text);
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-family: var(--mono);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.badge.critical { background: #ffebe9; color: #cf222e; border: 1px solid #ffcecb; font-weight:700; }
+.badge.high { background: #fff1e5; color: #bf5700; border: 1px solid #ffd8b5; font-weight:700; }
+.badge.medium { background: #fff8c5; color: #9a6700; border: 1px solid #f5e066; font-weight:700; }
+.badge.low { background: #dafbe1; color: #116329; border: 1px solid #aceebb; font-weight:700; }
+.badge.info { background: #ddf4ff; color: #0550ae; border: 1px solid #80ccff; font-weight:700; }
+
+/* TWO COL */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+/* MITRE MAP */
+.mitre-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.mitre-tag {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  cursor: default;
+  transition: all 0.2s;
+}
+
+.mitre-tag.active {
+  background: #ffebe9;
+  border-color: #ffcecb;
+  color: #cf222e;
+  font-weight: 700;
+}
+
+.mitre-tag:hover { border-color: var(--text-dim); color: var(--text); }
+
+/* TOOLS PAGE */
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 14px;
+}
+
+.tool-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px;
+  position: relative;
+  transition: border-color 0.2s;
+}
+
+.tool-card:hover { border-color: var(--red-dim); }
+
+.tool-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.tool-number {
+  font-family: var(--head);
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+}
+
+.tool-name {
+  font-family: var(--body);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-bright);
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+}
+
+.tool-file {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--green);
+  margin-bottom: 8px;
+}
+
+.tool-desc {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.tool-mitre {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--blue);
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+}
+
+.cmd-box {
+  background: #f6f8fa;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: #0550ae;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  word-break: break-all;
+}
+
+.copy-btn {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-family: var(--mono);
+  font-size: 9px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.copy-btn:hover { border-color: var(--green); color: var(--green); }
+
+.install-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 9px;
+  margin-top: 10px;
+}
+
+.install-status.ok { color: var(--green); }
+.install-status.missing { color: var(--red-dim); }
+
+/* WAZUH PAGE */
+.wazuh-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 10px;
+}
+
+.rule-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px 14px;
+  transition: border-color 0.2s;
+}
+
+.rule-card:hover { border-color: var(--blue); }
+
+.rule-id {
+  font-family: var(--head);
+  font-size: 13px;
+  color: var(--blue);
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.rule-name {
+  font-family: var(--body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-bright);
+  margin-bottom: 6px;
+}
+
+.rule-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.rule-level {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-dim);
+}
+
+/* REPORTS PAGE */
+.report-note {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 20px;
+  margin-bottom: 14px;
+}
+
+.report-note-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--yellow);
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+.report-note p {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.report-note code {
+  font-family: var(--mono);
+  font-size: 11px;
+  background: var(--bg);
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: var(--green);
+}
+
+/* MANUAL FILL FIELDS */
+.fill-section {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+.fill-title {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--yellow);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fill-title::before {
+  content: '⚠';
+  color: var(--yellow);
+}
+
+.fill-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.fill-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fill-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.fill-input {
+  background: #f6f8fa;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 7px 10px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: #1f2328;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.fill-input:focus { border-color: var(--red); }
+.fill-input::placeholder { color: #8b949e; }
+
+.save-btn {
+  background: #cf222e;
+  border: 1px solid #cf222e;
+  color: #ffffff;
+  padding: 8px 20px;
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 11px;
+  cursor: pointer;
+  margin-top: 10px;
+  letter-spacing: 1px;
+  transition: all 0.2s;
+}
+
+.save-btn:hover { background: #a40e26; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+/* ANIMATIONS */
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.page.active { animation: fadeIn 0.25s ease; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-ascii">██╗  ██╗ █████╗ ██╗  ██╗ █████╗ 
+██║  ██║██╔══██╗██║ ██╔╝██╔══██╗
+███████║███████║█████╔╝ ███████║
+██╔══██║██╔══██║██╔═██╗ ██╔══██║
+██║  ██║██║  ██║██║  ██╗██║  ██║
+╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝</div>
+    <div class="logo-sub">AI SECURITY FRAMEWORK v1.0</div>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-item active" onclick="showPage('dashboard')">
+      <span class="nav-icon">◈</span> Dashboard
+    </div>
+    <div class="nav-item" onclick="showPage('tools')">
+      <span class="nav-icon">⬡</span> Tools
+    </div>
+    <div class="nav-item" onclick="showPage('wazuh')">
+      <span class="nav-icon">◎</span> Wazuh Rules
+    </div>
+    <div class="nav-item" onclick="showPage('reports')">
+      <span class="nav-icon">▤</span> Reports
+    </div>
+    <div class="nav-item" onclick="showPage('config')">
+      <span class="nav-icon">⚙</span> Config
+    </div>
+  </nav>
+
+  <div class="tools-list">
+    <div class="tools-list-label">Tool Status</div>
+    <div id="sidebarTools"></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">HAKA AI — SOC Dashboard</div>
+    <div class="topbar-meta">
+      <span><span class="status-dot"></span>SYSTEM ONLINE</span>
+      <span id="clockDisplay">--:--:--</span>
+      <span>OPERATOR: KIBROM</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD PAGE -->
+    <div class="page active" id="page-dashboard">
+      <div class="dash-grid">
+        <div class="risk-gauge">
+          <div class="gauge-label">Risk Score</div>
+          <div class="gauge-circle" id="gaugeCircle">
+            <div class="gauge-inner">
+              <div class="gauge-score" id="gaugeScore">--</div>
+              <div class="gauge-max">/100</div>
+            </div>
+          </div>
+          <div class="gauge-severity" id="gaugeSeverity">NO SCAN</div>
+        </div>
+        <div class="stat-card critical">
+          <div class="stat-label">Critical</div>
+          <div class="stat-value" id="statCritical">--</div>
+          <div class="stat-sub">findings</div>
+        </div>
+        <div class="stat-card high">
+          <div class="stat-label">High</div>
+          <div class="stat-value" id="statHigh">--</div>
+          <div class="stat-sub">findings</div>
+        </div>
+        <div class="stat-card medium">
+          <div class="stat-label">Medium</div>
+          <div class="stat-value" id="statMedium">--</div>
+          <div class="stat-sub">findings</div>
+        </div>
+        <div class="stat-card low">
+          <div class="stat-label">Low</div>
+          <div class="stat-value" id="statLow">--</div>
+          <div class="stat-sub">findings</div>
+        </div>
+      </div>
+
+      <!-- MANUAL FILL WARNING -->
+      <div class="fill-section">
+        <div class="fill-title">Manual Input Required — Fill after running scans</div>
+        <div class="fill-grid">
+          <div class="fill-field">
+            <label class="fill-label">Last Target Scanned</label>
+            <input class="fill-input" id="inputTarget" placeholder="e.g. combanketh.et" />
+          </div>
+          <div class="fill-field">
+            <label class="fill-label">Scan Date</label>
+            <input class="fill-input" id="inputDate" placeholder="e.g. 2026-04-09" />
+          </div>
+          <div class="fill-field">
+            <label class="fill-label">Critical Findings Count</label>
+            <input class="fill-input" id="inputCritical" type="number" placeholder="e.g. 12" />
+          </div>
+          <div class="fill-field">
+            <label class="fill-label">High Findings Count</label>
+            <input class="fill-input" id="inputHigh" type="number" placeholder="e.g. 8" />
+          </div>
+          <div class="fill-field">
+            <label class="fill-label">Medium Findings Count</label>
+            <input class="fill-input" id="inputMedium" type="number" placeholder="e.g. 5" />
+          </div>
+          <div class="fill-field">
+            <label class="fill-label">Low Findings Count</label>
+            <input class="fill-input" id="inputLow" type="number" placeholder="e.g. 3" />
+          </div>
+          <div class="fill-field">
+            <label class="fill-label">Overall Risk Score (0-100)</label>
+            <input class="fill-input" id="inputRisk" type="number" min="0" max="100" placeholder="e.g. 87" />
+          </div>
+          <div class="fill-field">
+            <label class="fill-label">Tools Run (comma separated)</label>
+            <input class="fill-input" id="inputTools" placeholder="e.g. email,dns,tls" />
+          </div>
+        </div>
+        <button class="save-btn" onclick="updateDashboard()">▶ UPDATE DASHBOARD</button>
+      </div>
+
+      <div class="section-title">Scan History</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Target</th>
+              <th>Date</th>
+              <th>Tools Run</th>
+              <th>Critical</th>
+              <th>High</th>
+              <th>Risk Score</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="scanHistory">
+            <tr>
+              <td colspan="7" style="color:var(--text-dim);text-align:center;padding:20px;">
+                No scans recorded yet. Run tools and update dashboard above.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section-title">MITRE ATT&CK Coverage</div>
+      <div class="table-wrap" style="padding:14px;">
+        <div class="mitre-grid" id="mitreGrid"></div>
+      </div>
+    </div>
+
+    <!-- TOOLS PAGE -->
+    <div class="page" id="page-tools">
+      <div class="section-title">Security Assessment Tools — 13 Modules</div>
+      <div class="tools-grid" id="toolsGrid"></div>
+    </div>
+
+    <!-- WAZUH PAGE -->
+    <div class="page" id="page-wazuh">
+      <div class="section-title">Wazuh Detection Rules — 29 Rules</div>
+      <div class="wazuh-grid" id="wazuhGrid"></div>
+    </div>
+
+    <!-- REPORTS PAGE -->
+    <div class="page" id="page-reports">
+      <div class="report-note">
+        <div class="report-note-title">⚠ DYNAMIC REPORTS — MANUAL PROCESS REQUIRED</div>
+        <p>This dashboard cannot automatically read JSON files from disk (browser security restriction). To view scan reports:</p>
+        <p>1. Run your scan: <code>python haka_email_scanner.py --domain target.et</code></p>
+        <p>2. Copy the JSON output path, e.g. <code>/home/kironix/HAKA-AI/reports/scan_result.json</code></p>
+        <p>3. Paste the JSON content into the box below to render it here.</p>
+      </div>
+
+      <div class="fill-section">
+        <div class="fill-title">Paste Scan JSON Output Here</div>
+        <textarea class="fill-input" id="jsonInput" rows="8" style="width:100%;resize:vertical;font-size:10px;" placeholder='Paste JSON from any HAKA tool here, e.g.:
+{
+  "target": "combanketh.et",
+  "findings": [
+    {"severity": "CRITICAL", "title": "No DMARC record", "mitre": "T1566"}
+  ],
+  "risk_score": 87
+}'></textarea>
+        <button class="save-btn" onclick="renderReport()">▶ RENDER REPORT</button>
+      </div>
+
+      <div id="reportOutput"></div>
+    </div>
+
+    <!-- CONFIG PAGE -->
+    <div class="page" id="page-config">
+      <div class="section-title">Lab Configuration</div>
+      <div class="fill-section">
+        <div class="fill-title">HAKA Lab Targets — Fill with your authorized targets</div>
+        <div class="fill-grid">
+          <div class="fill-field">
+            <label class="fill-label">Lab Domain</label>
+            <input class="fill-input" id="cfgDomain" placeholder="haka.local" />
+          </div>
+          <div class="fill-field">
+            <label class="fill-label">Wazuh SIEM IP</label>
+            <input class="fill-input" id="cfgWazuh" placeholder="192.168.122.241" />
+          </div>
+          <div class="fill-field">
+            <label class="fill-label">DC / Exchange IP</label>
+            <input class="fill-input" id="cfgDC" placeholder="192.168.122.210" />
+          </div>
+          <div class="fill-field">
+            <label class="fill-label">Win11 Target IP</label>
+            <input class="fill-input" id="cfgWin" placeholder="192.168.122.182" />
+          </div>
+          <div class="fill-field">
+            <label class="fill-label">Tools Directory</label>
+            <input class="fill-input" id="cfgTools" placeholder="/home/kironix/HAKA-AI/scanners" />
+          </div>
+          <div class="fill-field">
+            <label class="fill-label">Reports Directory</label>
+            <input class="fill-input" id="cfgReports" placeholder="/home/kironix/HAKA-AI/reports" />
+          </div>
+        </div>
+        <button class="save-btn" onclick="saveConfig()">▶ SAVE CONFIG</button>
+      </div>
+
+      <div class="section-title">Quick Launch Commands</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Tool</th><th>Command</th><th></th></tr>
+          </thead>
+          <tbody id="quickLaunch"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+
+const TOOLS = [
+  { num:'01', name:'Email Security Scanner', file:'haka_email_scanner.py', mitre:'T1566',
+    section:'A1 — Email Spoofing', findings:'CRIT-CBE-02, CRIT-CBE-03, CRIT-CBE-04, CRIT-CBE-12, CRIT-AWB-04, CRIT-BOA-02', findingCount:8,
+    desc:'SPF record analysis (~all vs -all), DMARC policy check (p=none/quarantine/reject), DKIM validation across 20 selectors, MX record enumeration, SMTP banner grabbing, VRFY command testing. Risk: No DMARC=CRITICAL, No DKIM=HIGH, SPF ~all=MEDIUM.',
+    cmd:'python haka_email_scanner.py --domain combanketh.et',
+    cmds:['python haka_email_scanner.py --domain combanketh.et','python haka_email_scanner.py --file ethiopian_banks.txt','python haka_email_scanner.py --domain haka.local --smtp-check'] },
+  { num:'02', name:'DNS Recon Scanner', file:'haka_dns_scanner.py', mitre:'T1590.002',
+    section:'A2 — DNS Recon', findings:'All 7 targets lack DNSSEC, CRIT-TB-04, CRIT-CBE-06', findingCount:3,
+    desc:'Full record enumeration (A/AAAA/CNAME/MX/NS/SOA/TXT/SRV/PTR), DNSSEC/DNSKEY validation, zone transfer (AXFR) against all nameservers, reverse DNS sweep, subdomain brute force (200 built-in wordlist), wildcard DNS detection, SOA validation. Risk: Zone transfer=CRITICAL, No DNSSEC=HIGH.',
+    cmd:'python haka_dns_scanner.py --domain haka.local',
+    cmds:['python haka_dns_scanner.py --domain haka.local','python haka_dns_scanner.py --domain haka.local --dns-server 192.168.122.210','python haka_dns_scanner.py --domain haka.local --wordlist custom_subs.txt --delay 0.5'] },
+  { num:'03', name:'Exchange & NTLM Scanner', file:'haka_exchange_scanner.py', mitre:'T1557.001, T1190',
+    section:'B1 — NTLM Relay + B3 — ProxyShell', findings:'CRIT-CBE-01, CRIT-CBE-10, CRIT-CBE-11, CRIT-AWB-01, CRIT-AWB-02, CRIT-AWB-08', findingCount:6,
+    desc:'Exchange endpoint enumeration (/owa, /ecp, /ews, /autodiscover, /mapi, /oab, /powershell, /rpc), NTLM Type 1/Type 2 message decode (AD domain, server FQDN, OS version), ProxyShell SSRF detection, F5 BIG-IP cookie decode, 50+ Exchange build version database. Risk: Full stack exposed=CRITICAL, ProxyShell=CRITICAL.',
+    cmd:'python haka_exchange_scanner.py --target 192.168.122.210',
+    cmds:['python haka_exchange_scanner.py --target 192.168.122.210','python haka_exchange_scanner.py --target 192.168.122.210 --ntlm-decode','python haka_exchange_scanner.py --target 192.168.122.210 --check-proxyshell'] },
+  { num:'04', name:'Password Spray Detector', file:'haka_spray_detector.py', mitre:'T1110.003',
+    section:'B2 — Password Spray', findings:'CRIT-CBE-01, CRIT-CBE-12, CRIT-AWB-01, CRIT-BOA-05', findingCount:5,
+    desc:'DEFENSIVE tool — parses Windows Event Logs (EVTX/CSV) for EventID 4625/4624/4648. Detects: same source IP targeting multiple usernames, same password hash across accounts, failed-then-success patterns (compromised accounts), regular interval timing (automated tools). OWA-specific: LogonType 8 cleartext, LogonType 3 NTLM relay, IIS /owa/auth.owa POST analysis. 6 detection engines with timeline visualization.',
+    cmd:'python haka_spray_detector.py --evtx Security.evtx',
+    cmds:['python haka_spray_detector.py --evtx Security.evtx','python haka_spray_detector.py --csv failed_logins.csv --threshold 5 --window 300','python haka_spray_detector.py --evtx Security.evtx --generate-wazuh-rules'] },
+  { num:'05', name:'Kerberos Attack Detector', file:'haka_kerberos_detector.py', mitre:'T1558.003, T1558.004',
+    section:'B4 — Kerberoasting + B5 — AS-REP Roasting', findings:'CRIT-CBE-10, CRIT-AWB-09', findingCount:4,
+    desc:'DEFENSIVE tool — EventID 4769 (TGS) for Kerberoasting: flags RC4 encryption (type 0x17), detects mass TGS (10+ from same IP in 60s), identifies targeted SPNs. EventID 4768 (TGT) for AS-REP Roasting: flags preAuthType=0. EventID 4771 pre-auth failures. LDAP AD audit: accounts with SPNs set, pre-auth disabled, weak encryption types, service account password age. Generates Wazuh rules 100550/100551/100555.',
+    cmd:'python haka_kerberos_detector.py --evtx Security.evtx',
+    cmds:['python haka_kerberos_detector.py --evtx Security.evtx','python haka_kerberos_detector.py --evtx Security.evtx --ldap-server 192.168.122.210','python haka_kerberos_detector.py --audit-only --ldap-server 192.168.122.210'] },
+  { num:'06', name:'Web Application Scanner', file:'haka_web_scanner.py', mitre:'T1505.003, T1190, T1213',
+    section:'C1-C5 — PHP RCE, WordPress, cPanel, File Extraction, User Enum', findings:'CRIT-ET-07, CRIT-ET-08, CRIT-DSH-01 through CRIT-DSH-07, CRIT-TB-01, CRIT-TB-02', findingCount:12,
+    desc:'PHP checks (phpinfo.php, dangerous functions, HTTP methods). WordPress: /wp-login.php, REST API user enum, author enum (?author=1-20), XML-RPC, wp-content/debug.log, wp-config.php backups (.bak/.old/.swp). Sensitive files: .env, .git/HEAD, .git/config, debug.log, error.log, server-status. Admin panels: cPanel (:2082/:2083/:2086/:2087), WHM, Webmin, Plesk, phpMyAdmin, Adminer, /admin, /administrator, /manager.',
+    cmd:'python haka_web_scanner.py --url https://LAB_TARGET',
+    cmds:['python haka_web_scanner.py --url https://LAB_TARGET','python haka_web_scanner.py --url https://LAB_TARGET --wordpress-only','python haka_web_scanner.py --url https://LAB_TARGET --full-scan --output report'] },
+  { num:'07', name:'S3 Bucket Scanner', file:'haka_s3_scanner.py', mitre:'T1530',
+    section:'D1 — S3 Exfiltration', findings:'CRIT-CBE-09', findingCount:1,
+    desc:'Generates bucket name patterns ({org}, {org}-backup, {org}-data, {org}-logs, {org}-dev, {org}-staging, {org}-assets, {org}-private, {org}-internal, {org}-prod, data-{org}, www-{org}, cdn-{org}, files-{org} — 20+ patterns). Checks: HEAD existence, GET listing, file read, ACL readable (?acl), PUT upload detection. Supports MinIO (--endpoint). Risk: Publicly listable=CRITICAL, Files readable=CRITICAL, ACL readable=HIGH.',
+    cmd:'python haka_s3_scanner.py --org cbe',
+    cmds:['python haka_s3_scanner.py --org cbe','python haka_s3_scanner.py --org cbe --endpoint http://192.168.122.50:9000','python haka_s3_scanner.py --wordlist bucket_names.txt'] },
+  { num:'08', name:'TLS/SSL Analyzer', file:'haka_tls_scanner.py', mitre:'T1557',
+    section:'E1 — TLS Downgrade', findings:'CRIT-AWB-06, CRIT-ET-02', findingCount:2,
+    desc:'Tests all protocol versions: SSLv3 (should be disabled), TLS 1.0/1.1 (deprecated), TLS 1.2 (should be enabled), TLS 1.3 (should be preferred). Per-version cipher enumeration: flags NULL, EXPORT, RC4, DES, 3DES, MD5. Certificate analysis: subject/issuer/SANs/expiry, chain validation, self-signed detection, key size (RSA<2048=weak), signature algorithm (SHA-1=weak). Security headers: HSTS (max-age + preload), X-Content-Type-Options, X-Frame-Options, CSP. Risk: SSLv3=CRITICAL, TLS 1.0/1.1=HIGH, Weak ciphers=HIGH, No HSTS=MEDIUM.',
+    cmd:'python haka_tls_scanner.py --target 192.168.122.210',
+    cmds:['python haka_tls_scanner.py --target 192.168.122.210','python haka_tls_scanner.py --target 192.168.122.210 --port 443','python haka_tls_scanner.py --target 192.168.122.210 --full-cipher-test'] },
+  { num:'09', name:'CT OSINT Scanner', file:'haka_ct_scanner.py', mitre:'T1596.003',
+    section:'E2 — CT OSINT', findings:'CRIT-ET-01, CRIT-AWB-05, CRIT-CBE-05, CRIT-CBE-07, CRIT-TB-03', findingCount:5,
+    desc:'Queries crt.sh API for all certificates issued for a domain. Extracts unique hostnames/subdomains, categorizes by type: internal infrastructure (jenkins, gitlab, vpn, exchange), financial (swift, payment, core-banking), security (waf, firewall, siem, cyberark). Detects naming patterns (F5 BIG-IP, Exchange servers, SWIFT systems). Counts certs per domain, identifies CAs used, finds expired vs active, detects wildcards. Real-time monitoring via certstream websocket.',
+    cmd:'python haka_ct_scanner.py --domain ethiotelecom.et',
+    cmds:['python haka_ct_scanner.py --domain ethiotelecom.et','python haka_ct_scanner.py --domain awashbank.com --export subdomains.csv','python haka_ct_scanner.py --domain combanketh.et --monitor'] },
+  { num:'10', name:'Collaboration Platform Scanner', file:'haka_collab_scanner.py', mitre:'T1078, T1530',
+    section:'F1 — Mattermost', findings:'CRIT-BOA-03, CRIT-BOA-04, CRIT-BOA-05, CRIT-BOA-06', findingCount:4,
+    desc:'Mattermost: detect instance (ports 8065/443), extract version from /api/v4/config/client, check public email signup, MFA enforcement, password length policy, unauthenticated API access, third-party integrations (Stripe.js, analytics) from CSP headers. General: Slack webhooks, Microsoft Teams endpoints, Rocket.Chat, Jira/Confluence exposure. Version-to-CVE mapping: >6mo=HIGH, >1yr=CRITICAL. Config analysis: password policy, MFA, public registration, API exposure, data retention.',
+    cmd:'python haka_collab_scanner.py --target 192.168.122.50 --port 8065',
+    cmds:['python haka_collab_scanner.py --target 192.168.122.50 --port 8065','python haka_collab_scanner.py --target LAB_TARGET --type mattermost','python haka_collab_scanner.py --target LAB_TARGET --full-scan'] },
+  { num:'11', name:'VPN Gateway Scanner', file:'haka_vpn_scanner.py', mitre:'T1133',
+    section:'D3 — VPN Exploit', findings:'CRIT-ET-06', findingCount:1,
+    desc:'Fingerprints 6 vendors: Fortinet (/remote/fgt_lang, /remote/login, /remote/logincheck), Pulse Secure (/dana-na/auth/url_default/welcome.cgi), Cisco AnyConnect (/+CSCOE+/logon.html), Palo Alto GlobalProtect (/global-protect/login.esp), OpenVPN (/admin, port 1194 UDP), SonicWall (/cgi-bin/welcome). Extracts version from headers/body, maps to CVE database: Fortinet CVE-2023-27997 (heap overflow), Pulse CVE-2021-22893 (auth bypass), Cisco CVE-2023-20269 (brute force), Palo Alto CVE-2024-3400 (command injection). Risk: Known CVE=CRITICAL, No MFA=HIGH.',
+    cmd:'python haka_vpn_scanner.py --target LAB_TARGET',
+    cmds:['python haka_vpn_scanner.py --target LAB_TARGET','python haka_vpn_scanner.py --target 192.168.122.50 --port 443','python haka_vpn_scanner.py --targets vpn_ips.txt'] },
+  { num:'12', name:'Wazuh Rule Generator', file:'haka_wazuh_ai.py', mitre:'ALL',
+    section:'ALL sections — Red Team to Blue Team bridge', findings:'24 pre-built rules (100501-100652)', findingCount:24,
+    desc:'Accepts scan results JSON from any HAKA tool, auto-generates Wazuh custom detection rules. Pre-built rules: 100501 (Email Spoofing), 100502 (SMTP VRFY), 100510 (AXFR), 100511 (DNS Brute Force), 100520 (NTLM Relay), 100521 (RBCD), 100530 (Password Spray), 100531 (OWA Cleartext), 100540 (ProxyShell), 100541 (Webshell), 100550/551 (Kerberoasting), 100555 (AS-REP), 100560-562 (Web RCE), 100570-571 (WordPress), 100580 (cPanel), 100590 (Sensitive Files), 100595 (WP User Enum), 100600 (S3), 100610 (Exchange), 100620 (VPN), 100630 (TLS), 100640 (DNS), 100650-652 (Mattermost). AI mode: free-text to rule XML.',
+    cmd:'python haka_wazuh_ai.py --generate-all',
+    cmds:['python haka_wazuh_ai.py --generate-all','python haka_wazuh_ai.py --from-scan results.json','python haka_wazuh_ai.py --custom "Detect 5 failed RDP logins in 60 seconds from same IP"','python haka_wazuh_ai.py --deploy /var/ossec/etc/rules/'] },
+  { num:'13', name:'HAKA AI Unified Scanner', file:'haka_ai.py', mitre:'ALL',
+    section:'ALL sections — Master Orchestrator', findings:'50+ findings across all modules', findingCount:50,
+    desc:'Runs all 12 scanners against a target: Email (DMARC/DKIM/SPF), DNS recon, Exchange/NTLM, Web app scanning, TLS/SSL analysis, S3 bucket discovery, CT OSINT, VPN gateway scanning, Collaboration platform audit. Aggregates into unified risk score (0-100). Generates executive summary (3-5 sentences), findings by severity, MITRE ATT&CK mapping per finding, attack chain analysis (most likely attack path), remediation priority list, Wazuh rules for all findings. Output: console + JSON + HTML + optional PDF.',
+    cmd:'python haka_ai.py --target haka.local --full-scan',
+    cmds:['python haka_ai.py --target haka.local --full-scan','python haka_ai.py --target 192.168.122.210 --modules email,dns,exchange','python haka_ai.py --target haka.local --output /reports/ --format html,json','python haka_ai.py --config haka_config.yaml'] },
+];
+
+const WAZUH_RULES = [
+  { id:'100501', name:'Email Spoofing — External IP', severity:'critical', level:12 },
+  { id:'100502', name:'SMTP VRFY/EXPN Enumeration', severity:'medium', level:8 },
+  { id:'100510', name:'DNS Zone Transfer Attempt (AXFR)', severity:'critical', level:13 },
+  { id:'100511', name:'DNS Brute Force (50+ queries/60s)', severity:'high', level:10 },
+  { id:'100520', name:'NTLM Relay (EventID 4624 Type 3)', severity:'critical', level:14 },
+  { id:'100521', name:'RBCD Delegation Modified', severity:'critical', level:14 },
+  { id:'100530', name:'Password Spraying Pattern', severity:'high', level:11 },
+  { id:'100531', name:'OWA Cleartext Logon', severity:'critical', level:13 },
+  { id:'100540', name:'ProxyShell Exploitation Attempt', severity:'critical', level:15 },
+  { id:'100541', name:'Exchange Webshell Access', severity:'critical', level:15 },
+  { id:'100550', name:'Kerberoasting (RC4 TGS Request)', severity:'critical', level:13 },
+  { id:'100551', name:'Mass Kerberoasting', severity:'critical', level:14 },
+  { id:'100555', name:'AS-REP Roasting', severity:'high', level:11 },
+  { id:'100560', name:'Webshell Command Execution', severity:'critical', level:15 },
+  { id:'100561', name:'PHP File Upload via PUT', severity:'critical', level:13 },
+  { id:'100562', name:'phpinfo.php Access', severity:'medium', level:7 },
+  { id:'100570', name:'WordPress Plugin Exploitation', severity:'high', level:10 },
+  { id:'100571', name:'XML-RPC Brute Force', severity:'high', level:10 },
+  { id:'100580', name:'cPanel/WHM Brute Force', severity:'high', level:10 },
+  { id:'100590', name:'Sensitive File Access', severity:'high', level:9 },
+  { id:'100595', name:'WordPress User Enumeration', severity:'medium', level:7 },
+  { id:'100600', name:'S3 Bucket External Access', severity:'critical', level:12 },
+  { id:'100610', name:'Exchange Endpoint Scanning', severity:'high', level:9 },
+  { id:'100620', name:'VPN Brute Force', severity:'high', level:11 },
+  { id:'100630', name:'Deprecated TLS Version', severity:'high', level:9 },
+  { id:'100640', name:'Internal Hostname DNS Query', severity:'medium', level:7 },
+  { id:'100650', name:'Mattermost Brute Force', severity:'high', level:10 },
+  { id:'100651', name:'Mattermost Config Extraction', severity:'critical', level:12 },
+  { id:'100652', name:'Mattermost Sensitive Keyword Search', severity:'medium', level:8 },
+];
+
+const MITRE = [
+  'T1566','T1590.002','T1557.001','T1190','T1110.003',
+  'T1558.003','T1558.004','T1505.003','T1213','T1530',
+  'T1557','T1596.003','T1078','T1133','T1110'
+];
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let scanHistory = JSON.parse(localStorage.getItem('haka_history') || '[]');
+let config = JSON.parse(localStorage.getItem('haka_config') || '{}');
+
+// ─── API BASE ─────────────────────────────────────────────────────────────
+const API = window.location.origin;
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+function init() {
+  renderSidebar();
+  renderToolsGrid();
+  renderWazuhGrid();
+  renderMitre();
+  renderHistory();
+  renderQuickLaunch();
+  loadConfig();
+  startClock();
+  autoLoad();
+}
+
+async function autoLoad() {
+  try {
+    // Auto-detect tool status
+    const toolsResp = await fetch(API + '/api/tools');
+    if (toolsResp.ok) {
+      const tools = await toolsResp.json();
+      updateToolStatus(tools);
+    }
+    // Auto-load stats from scan reports
+    const statsResp = await fetch(API + '/api/stats');
+    if (statsResp.ok) {
+      const stats = await statsResp.json();
+      autoUpdateDashboard(stats);
+    }
+    // Auto-load latest reports
+    const reportsResp = await fetch(API + '/api/reports');
+    if (reportsResp.ok) {
+      const reports = await reportsResp.json();
+      if (reports.length > 0) {
+        autoPopulateHistory(reports);
+      }
+    }
+  } catch(e) {
+    console.log('Backend not running, using manual mode. Start: python dashboard_server.py');
+  }
+}
+
+function updateToolStatus(tools) {
+  const sidebar = document.getElementById('sidebarTools');
+  sidebar.innerHTML = tools.map(t => `
+    <div class="tool-item">
+      <span>${t.num} ${t.name.split(' ').slice(0,2).join(' ')}</span>
+      <div class="tool-dot ${t.installed ? 'installed' : 'missing'}" title="${t.installed ? t.lines+' lines' : 'Not found'}"></div>
+    </div>
+  `).join('');
+
+  // Update tool cards install status
+  const cards = document.querySelectorAll('.install-status');
+  tools.forEach((t, i) => {
+    if (cards[i]) {
+      cards[i].className = 'install-status ' + (t.installed ? 'ok' : 'missing');
+      cards[i].innerHTML = t.installed
+        ? `● Installed — ${t.lines} lines, ${(t.size/1024).toFixed(0)} KB`
+        : '○ Not found — check tools directory';
+    }
+  });
+}
+
+function autoUpdateDashboard(stats) {
+  const sc = stats.severity_counts;
+  document.getElementById('statCritical').textContent = sc.critical || 0;
+  document.getElementById('statHigh').textContent = sc.high || 0;
+  document.getElementById('statMedium').textContent = sc.medium || 0;
+  document.getElementById('statLow').textContent = sc.low || 0;
+
+  const risk = stats.risk_score;
+  document.getElementById('gaugeScore').textContent = risk;
+  const deg = (risk / 100) * 360;
+  const color = risk > 70 ? '#cf222e' : risk > 40 ? '#bf5700' : '#116329';
+  document.getElementById('gaugeCircle').style.background =
+    `conic-gradient(${color} ${deg}deg, #e8e8e8 ${deg}deg)`;
+  const sev = risk > 70 ? 'CRITICAL' : risk > 40 ? 'HIGH RISK' : risk > 20 ? 'MEDIUM' : 'LOW';
+  document.getElementById('gaugeSeverity').textContent = sev;
+  document.getElementById('gaugeSeverity').style.color = color;
+}
+
+function autoPopulateHistory(reports) {
+  const tbody = document.getElementById('scanHistory');
+  const rows = reports.slice(0, 15).map(r => {
+    const d = r.data;
+    const target = d.target || d.domain || d.host || r.file;
+    const sc = d.severity_counts || d.finding_counts || {};
+    const findings = d.findings || d.all_findings || d.detections || [];
+    let crit = sc.critical || sc.CRITICAL || 0;
+    let high = sc.high || sc.HIGH || 0;
+    if (!crit && !high && findings.length) {
+      findings.forEach(f => { const s=(f.severity||'').toUpperCase(); if(s==='CRITICAL') crit++; if(s==='HIGH') high++; });
+    }
+    const total = (crit*15 + high*8);
+    const risk = Math.min(100, total);
+    const date = r.modified ? r.modified.slice(0,10) : '—';
+    const tool = r.file.replace(/(_scan|_detect|_\d+).*\.json/,'');
+    return `<tr>
+      <td>${target}</td>
+      <td>${date}</td>
+      <td>${tool}</td>
+      <td><span class="badge critical">${crit}</span></td>
+      <td><span class="badge high">${high}</span></td>
+      <td style="color:${risk>70?'#cf222e':risk>40?'#bf5700':'#116329'};font-weight:700">${risk}/100</td>
+      <td><span class="badge info">COMPLETE</span></td>
+    </tr>`;
+  });
+  if (rows.length) tbody.innerHTML = rows.join('');
+}
+
+function startClock() {
+  function tick() {
+    const d = new Date();
+    document.getElementById('clockDisplay').textContent =
+      d.toTimeString().slice(0,8);
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+
+// ─── NAVIGATION ──────────────────────────────────────────────────────────────
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ─── SIDEBAR ─────────────────────────────────────────────────────────────────
+function renderSidebar() {
+  const el = document.getElementById('sidebarTools');
+  el.innerHTML = TOOLS.map(t => `
+    <div class="tool-item">
+      <span>${t.num} ${t.name.split(' ').slice(0,2).join(' ')}</span>
+      <div class="tool-dot missing" title="Run tool to verify"></div>
+    </div>
+  `).join('');
+}
+
+// ─── TOOLS GRID ──────────────────────────────────────────────────────────────
+function renderToolsGrid() {
+  document.getElementById('toolsGrid').innerHTML = TOOLS.map(t => `
+    <div class="tool-card">
+      <div class="tool-card-header">
+        <div>
+          <div class="tool-number">TOOL ${t.num}</div>
+          <div class="tool-name">${t.name}</div>
+        </div>
+        <div style="text-align:right">
+          <span class="badge info" style="font-size:9px">${t.findingCount} findings</span>
+        </div>
+      </div>
+      <div class="tool-file">${t.file}</div>
+      <div style="margin:4px 0;font-size:10px;color:var(--text-dim)">
+        <strong>Section:</strong> ${t.section} &nbsp;|&nbsp; <strong>Findings:</strong> ${t.findings}
+      </div>
+      <div class="tool-desc">${t.desc}</div>
+      <div class="tool-mitre">MITRE ATT&CK: ${t.mitre}</div>
+      ${(t.cmds||[t.cmd]).map(c => `
+        <div class="cmd-box">
+          <span>${c}</span>
+          <button class="copy-btn" onclick="copyText('${c.replace(/'/g,"\\'")}', this)">COPY</button>
+        </div>
+      `).join('')}
+      <div class="install-status missing">
+        ○ Status unknown — check if file exists in your tools directory
+      </div>
+    </div>
+  `).join('');
+}
+
+// ─── WAZUH GRID ──────────────────────────────────────────────────────────────
+function renderWazuhGrid() {
+  document.getElementById('wazuhGrid').innerHTML = WAZUH_RULES.map(r => `
+    <div class="rule-card">
+      <div class="rule-id">${r.id}</div>
+      <div class="rule-name">${r.name}</div>
+      <div class="rule-meta">
+        <span class="badge ${r.severity}">${r.severity}</span>
+        <span class="rule-level">Level ${r.level}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ─── MITRE ───────────────────────────────────────────────────────────────────
+function renderMitre() {
+  document.getElementById('mitreGrid').innerHTML = MITRE.map(t => `
+    <div class="mitre-tag active">${t}</div>
+  `).join('');
+}
+
+// ─── HISTORY ─────────────────────────────────────────────────────────────────
+function renderHistory() {
+  const tbody = document.getElementById('scanHistory');
+  if (!scanHistory.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="color:var(--text-dim);text-align:center;padding:20px;">No scans recorded. Run tools and update dashboard.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = scanHistory.map(s => `
+    <tr>
+      <td>${s.target}</td>
+      <td>${s.date}</td>
+      <td>${s.tools}</td>
+      <td><span class="badge critical">${s.critical}</span></td>
+      <td><span class="badge high">${s.high}</span></td>
+      <td style="color:${s.risk>70?'var(--red)':s.risk>40?'var(--orange)':'var(--green)'};font-weight:700">${s.risk}/100</td>
+      <td><span class="badge info">COMPLETE</span></td>
+    </tr>
+  `).join('');
+}
+
+// ─── DASHBOARD UPDATE ────────────────────────────────────────────────────────
+function updateDashboard() {
+  const target = document.getElementById('inputTarget').value || 'Unknown';
+  const date = document.getElementById('inputDate').value || new Date().toISOString().slice(0,10);
+  const critical = parseInt(document.getElementById('inputCritical').value) || 0;
+  const high = parseInt(document.getElementById('inputHigh').value) || 0;
+  const medium = parseInt(document.getElementById('inputMedium').value) || 0;
+  const low = parseInt(document.getElementById('inputLow').value) || 0;
+  const risk = parseInt(document.getElementById('inputRisk').value) || 0;
+  const tools = document.getElementById('inputTools').value || 'unknown';
+
+  // Update stat cards
+  document.getElementById('statCritical').textContent = critical;
+  document.getElementById('statHigh').textContent = high;
+  document.getElementById('statMedium').textContent = medium;
+  document.getElementById('statLow').textContent = low;
+
+  // Update gauge
+  document.getElementById('gaugeScore').textContent = risk;
+  const deg = (risk / 100) * 360;
+  const color = risk > 70 ? 'var(--red)' : risk > 40 ? 'var(--orange)' : 'var(--green)';
+  document.getElementById('gaugeCircle').style.background =
+    `conic-gradient(${color} ${deg}deg, var(--panel2) ${deg}deg)`;
+  const sev = risk > 70 ? 'CRITICAL' : risk > 40 ? 'HIGH RISK' : risk > 20 ? 'MEDIUM' : 'LOW';
+  document.getElementById('gaugeSeverity').textContent = sev;
+  document.getElementById('gaugeSeverity').style.color = color;
+
+  // Save to history
+  scanHistory.unshift({ target, date, tools, critical, high, medium, low, risk });
+  if (scanHistory.length > 20) scanHistory.pop();
+  localStorage.setItem('haka_history', JSON.stringify(scanHistory));
+  renderHistory();
+
+  alert('Dashboard updated. Scroll down to see scan history.');
+}
+
+// ─── REPORT RENDER ───────────────────────────────────────────────────────────
+function renderReport() {
+  const raw = document.getElementById('jsonInput').value.trim();
+  if (!raw) return;
+  try {
+    const data = JSON.parse(raw);
+    const out = document.getElementById('reportOutput');
+    const findings = data.findings || [];
+    out.innerHTML = `
+      <div class="section-title">Parsed Report — ${data.target || 'Unknown Target'}</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Severity</th><th>Finding</th><th>MITRE</th></tr></thead>
+          <tbody>
+            ${findings.length ? findings.map(f => `
+              <tr>
+                <td><span class="badge ${(f.severity||'info').toLowerCase()}">${f.severity||'INFO'}</span></td>
+                <td>${f.title || f.description || JSON.stringify(f)}</td>
+                <td style="color:var(--blue);font-family:var(--mono);font-size:10px">${f.mitre||'—'}</td>
+              </tr>
+            `).join('') : `<tr><td colspan="3" style="color:var(--text-dim);text-align:center;padding:14px">No findings array found in JSON</td></tr>`}
+          </tbody>
+        </table>
+      </div>
+      ${data.risk_score !== undefined ? `<div style="font-family:var(--mono);font-size:12px;color:var(--red);padding:8px 0">Risk Score: ${data.risk_score}/100</div>` : ''}
+    `;
+  } catch(e) {
+    document.getElementById('reportOutput').innerHTML =
+      `<div style="color:var(--red);font-family:var(--mono);font-size:11px;padding:10px">Invalid JSON: ${e.message}</div>`;
+  }
+}
+
+// ─── CONFIG ──────────────────────────────────────────────────────────────────
+function saveConfig() {
+  config = {
+    domain: document.getElementById('cfgDomain').value,
+    wazuh: document.getElementById('cfgWazuh').value,
+    dc: document.getElementById('cfgDC').value,
+    win: document.getElementById('cfgWin').value,
+    toolsDir: document.getElementById('cfgTools').value,
+    reportsDir: document.getElementById('cfgReports').value,
+  };
+  localStorage.setItem('haka_config', JSON.stringify(config));
+  renderQuickLaunch();
+  alert('Config saved to browser storage.');
+}
+
+function loadConfig() {
+  if (config.domain) document.getElementById('cfgDomain').value = config.domain;
+  if (config.wazuh) document.getElementById('cfgWazuh').value = config.wazuh;
+  if (config.dc) document.getElementById('cfgDC').value = config.dc;
+  if (config.win) document.getElementById('cfgWin').value = config.win;
+  if (config.toolsDir) document.getElementById('cfgTools').value = config.toolsDir;
+  if (config.reportsDir) document.getElementById('cfgReports').value = config.reportsDir;
+}
+
+function renderQuickLaunch() {
+  const dir = config.toolsDir || '/home/kironix/HAKA-AI/scanners';
+  const target = config.domain || 'TARGET';
+  const ip = config.dc || 'TARGET_IP';
+  const tbody = document.getElementById('quickLaunch');
+  tbody.innerHTML = TOOLS.slice(0,12).map(t => {
+    const cmd = `cd ${dir} && ${t.cmd.replace('TARGET_IP', ip).replace('TARGET', target)}`;
+    return `<tr>
+      <td style="color:var(--text-bright);font-weight:600">${t.name}</td>
+      <td><span style="font-family:var(--mono);font-size:10px;color:var(--green)">${cmd}</span></td>
+      <td><button class="copy-btn" onclick="copyText('${cmd.replace(/'/g,"\\'")}', this)">COPY</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── UTILS ───────────────────────────────────────────────────────────────────
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'DONE';
+    setTimeout(() => btn.textContent = orig, 1500);
+  });
+}
+
+init();
+</script>
+</body>
+</html>

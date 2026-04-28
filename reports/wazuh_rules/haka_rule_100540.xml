@@ -1,0 +1,9 @@
+<group name="haka,">
+<rule id="100540" level="15">
+  <if_sid>31100</if_sid>
+  <url>/autodiscover/autodiscover.json|/mapi/nspi|/mapi/emsmdb|/powershell</url>
+  <match>Email=autodiscover|/autodiscover.json.*@.*</match>
+  <description>HAKA: ProxyShell exploitation attempt on Exchange — $(url)</description>
+  <group>haka,exchange,proxyshell,exploit,T1190,</group>
+</rule>
+</group>

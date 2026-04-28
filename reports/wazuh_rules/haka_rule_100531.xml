@@ -1,0 +1,10 @@
+<group name="haka,">
+<rule id="100531" level="8">
+  <if_sid>31100</if_sid>
+  <url>/owa/auth|/owa/auth.owa</url>
+  <match>POST</match>
+  <field name="data.protocol">^HTTP$</field>
+  <description>HAKA: OWA cleartext logon detected — credentials transmitted over HTTP</description>
+  <group>haka,exchange,owa,cleartext,T1078,</group>
+</rule>
+</group>

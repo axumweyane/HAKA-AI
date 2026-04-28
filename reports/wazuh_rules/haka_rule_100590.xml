@@ -1,0 +1,8 @@
+<group name="haka,">
+<rule id="100590" level="10">
+  <if_sid>31100</if_sid>
+  <url>\.env$|\.git/config|wp-config\.php\.bak|/etc/passwd|/etc/shadow|\.htpasswd|web\.config|\.DS_Store</url>
+  <description>HAKA: Sensitive file access attempt — $(url)</description>
+  <group>haka,web,sensitive_file,T1083,</group>
+</rule>
+</group>

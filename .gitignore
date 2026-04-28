@@ -1,0 +1,93 @@
+# HAKA AI — Cybersecurity Assessment Platform
+# --------------------------------------------------
+# Public repo: code only. No client data, no API keys, no findings.
+
+# Sensitive data
+*.env
+.env.*
+**/credentials*
+**/secrets*
+
+# CRM & business data
+.haka/
+*.db
+haka_crm.db
+
+# Scan results — contains client vulnerability data
+reports/*.json
+reports/*.csv
+reports/*.xml
+reports/*.nmap
+reports/*.gnmap
+reports/haka_consolidated_*.json
+reports/haka_web_*.json
+reports/haka_web_*.html
+reports/email_scan_*.json
+reports/dns_recon_*.json
+reports/exchange_scan_*.json
+reports/tls_scan_*.json
+reports/s3_scan_*.json
+reports/ct_scan_*.json
+reports/vpn_scan_*.json
+reports/collab_scan_*.json
+reports/headers_methods_audit*.json
+reports/kerberos_detect_*.json
+reports/scanner.db
+reports/nuclei/
+reports/greenbone/
+reports/zap/
+reports/lynis/
+reports/recon-reports/
+
+# Archive — contains old findings
+reports/archive/
+
+# Deep assessment packages — client deliverables
+reports/CBE_Deep_Assessment_April2026/
+reports/HAKA_Final_Report_April2026.pdf
+
+# AI-generated reports with real finding data
+reports/AI_Exec_*.md
+reports/CBE_Exec_DeepSeekV4.md
+reports/CBE_AI_Executive_*.md
+reports/telebirr_mobile_scan.*
+
+# Client one-pagers (contain bank-specific findings)
+reports/client_one_pagers/
+
+# Executive brief with cross-target findings
+reports/HAKA_Executive_Brief_7_Targets.md
+
+# Generated invoices
+reports/HAKA-*.md
+
+# Mobile scan results (contain client findings)
+reports/mobile_scan_*
+reports/telebirr_mobile_scan.*
+reports/*_mobile_scan.*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# APK files
+*.apk
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp
+/tmp/
+temp/
+*.tmp

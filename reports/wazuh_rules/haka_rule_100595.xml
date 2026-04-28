@@ -1,0 +1,8 @@
+<group name="haka,">
+<rule id="100595" level="8">
+  <if_sid>31100</if_sid>
+  <url>/wp-json/wp/v2/users|/?author=</url>
+  <description>HAKA: WordPress user enumeration via REST API or author parameter</description>
+  <group>haka,web,wordpress,enumeration,T1589,</group>
+</rule>
+</group>

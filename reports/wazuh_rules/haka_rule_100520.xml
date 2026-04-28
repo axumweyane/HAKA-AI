@@ -1,0 +1,10 @@
+<group name="haka,">
+<rule id="100520" level="12">
+  <if_sid>60106</if_sid>
+  <field name="win.system.eventID">^4624$</field>
+  <field name="win.eventdata.logonType">^3$</field>
+  <field name="win.eventdata.authenticationPackageName">NTLM</field>
+  <description>HAKA: Potential NTLM relay — Network logon Type 3 via NTLM from $(win.eventdata.ipAddress)</description>
+  <group>haka,ad,ntlm_relay,T1557,</group>
+</rule>
+</group>

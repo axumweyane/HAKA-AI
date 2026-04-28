@@ -1,0 +1,9 @@
+<group name="haka,">
+<rule id="100570" level="12">
+  <if_sid>31100</if_sid>
+  <url>/wp-content/plugins/</url>
+  <match>POST|PUT</match>
+  <description>HAKA: WordPress plugin exploitation attempt — $(url)</description>
+  <group>haka,web,wordpress,exploit,T1190,</group>
+</rule>
+</group>

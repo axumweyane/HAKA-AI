@@ -1,0 +1,9 @@
+<group name="haka,">
+<rule id="100530" level="10" frequency="10" timeframe="120">
+  <if_matched_sid>60122</if_matched_sid>
+  <same_source_ip />
+  <different_target_user />
+  <description>HAKA: Password spraying — 10+ failed logins to different accounts from $(srcip)</description>
+  <group>haka,auth,password_spray,T1110.003,</group>
+</rule>
+</group>
