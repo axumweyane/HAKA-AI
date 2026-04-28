@@ -667,7 +667,7 @@ Examples:
     provider_name, actual_model = llm.resolve_model(args.model)
     status = llm.status()
     provider_info = status.get(provider_name, {})
-    if not provider_info.get("available", False) and provider_name != "ollama":
+    if not provider_info.get("available", False) and provider_name not in ("ollama", "openclaw"):
         print(f"WARNING: Provider '{provider_name}' has no valid API key.", file=sys.stderr)
         print(f"  Falling back to local ollama. Set {provider_name.upper()}_API_KEY for cloud models.", file=sys.stderr)
         args.model = "qwen"  # fallback

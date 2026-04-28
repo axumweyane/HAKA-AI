@@ -285,6 +285,7 @@ HAKA uses a unified provider layer (`haka_providers.py`) supporting local Ollama
 
 | Shortcut | Full Model | Provider |
 |----------|-----------|----------|
+| `openclaw` | openclaw/default | OpenClaw Gateway (local, same model) |
 | `deepseek` | deepseek-chat | DeepSeek API |
 | `claude` | claude-sonnet-4-20250514 | Anthropic |
 | `claude-opus` | claude-opus-4-20250514 | Anthropic |
@@ -297,6 +298,11 @@ HAKA uses a unified provider layer (`haka_providers.py`) supporting local Ollama
 
 ### API Key Setup
 
+#### OpenClaw Gateway (zero config)
+The `openclaw` shortcut auto-discovers the gateway token from `~/.openclaw/openclaw.json`.
+No setup needed — just make sure the gateway chat completions endpoint is enabled.
+
+#### Cloud APIs
 Place keys in any of these (auto-discovered):
 - `~/.deepseek.env`
 - `~/HAKA-AI/.env`

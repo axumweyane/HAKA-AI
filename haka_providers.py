@@ -78,6 +78,9 @@ MODEL_SHORTCUTS: Dict[str, str] = {
     "r1":               "ollama:deepseek-r1:7b",
     "coder":            "ollama:qwen2.5-coder:7b",
     "llama":            "ollama:llama3.2:latest",
+    # --- OpenClaw Gateway (openai-compatible local endpoint) ---
+    "openclaw":         "openclaw:openclaw/default",
+    "oc":               "openclaw:openclaw/default",
 }
 
 
@@ -288,6 +291,70 @@ class OpenAIProvider(_LLMProvider):
             raise RuntimeError(f"OpenAI HTTP {e.code}: {body}")
 
 
+# ── OpenClaw Provider ─────────────────────────────────────────────────────
+
+class OpenClawProvider(_LLMProvider):
+    """OpenClaw Gateway OpenAI-compatible endpoint (local, same as this assistant)."""
+    name = "openclaw"
+    API_URL = "http://127.0.0.1:18789/v1/chat/completions"
+
+    def __init__(self, api_key: Optional[str] = None):
+        self.api_key = api_key or _load_key("OPENCLAW_GATEWAY_TOKEN")
+        # Auto-discover token from openclaw.json
+        if not self.api_key:
+            try:
+                config_path = os.path.expanduser("~/.openclaw/openclaw.json")
+                if os.path.exists(config_path):
+                    with open(config_path) as f:
+                        cfg = json.load(f)
+                    self.api_key = cfg.get("gateway", {}).get("auth", {}).get("token")
+            except Exception:
+                pass
+        self._available = self.api_key is not None
+
+    @property
+    def available(self) -> bool:
+        return self._available
+
+    def generate(self, prompt: str, model: str, system: Optional[str] = None,
+                 max_tokens: int = 2048, temperature: float = 0.3) -> str:
+        if not self.api_key:
+            raise RuntimeError("No OpenClaw gateway token found.")
+
+        messages = []
+        if system:
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": prompt})
+
+        # Map model to OpenClaw agent: openclaw:openclaw/default
+        agent = "openclaw/default"
+        if ":" in model:
+            agent = model.split(":", 1)[1]
+
+        data = json.dumps({
+            "model": agent,
+            "messages": messages,
+            "max_tokens": max_tokens,
+            "temperature": temperature,
+            "stream": False,
+        }).encode("utf-8")
+
+        req = urllib.request.Request(
+            self.API_URL, data=data,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {self.api_key}",
+            }
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=300) as resp:
+                r = json.loads(resp.read().decode("utf-8"))
+                return r["choices"][0]["message"]["content"].strip()
+        except urllib.error.HTTPError as e:
+            body = e.read().decode("utf-8", errors="replace")[:300]
+            raise RuntimeError(f"OpenClaw HTTP {e.code}: {body}")
+
+
 # ── OpenRouter Provider ──────────────────────────────────────────────────────
 
 class OpenRouterProvider(_LLMProvider):
@@ -362,6 +429,7 @@ class HakaLLM:
         self._deepseek: Optional[DeepSeekProvider] = None
         self._openai: Optional[OpenAIProvider] = None
         self._openrouter: Optional[OpenRouterProvider] = None
+        self._openclaw: Optional[OpenClawProvider] = None
 
     # Provider properties (lazy)
     @property
@@ -388,6 +456,14 @@ class HakaLLM:
             self._openrouter = OpenRouterProvider()
         return self._openrouter
 
+    @property
+    def openclaw_gw(self):
+        if self._openclaw is None:
+            self._openclaw = None  # initialized in __init__ if needed
+        if self._openclaw is None:
+            self._openclaw = OpenClawProvider()
+        return self._openclaw
+
     def resolve_model(self, model: str) -> tuple:
         """Resolve model name to (provider_name, actual_model_name)."""
         # Check shortcuts
@@ -395,7 +471,7 @@ class HakaLLM:
             model = MODEL_SHORTCUTS[model.lower()]
 
         # Explicit provider prefix
-        for prefix in ["ollama:", "anthropic:", "deepseek:", "openai:", "openrouter:"]:
+        for prefix in ["ollama:", "anthropic:", "deepseek:", "openai:", "openrouter:", "openclaw:"]:
             if model.startswith(prefix):
                 return (prefix[:-1], model[len(prefix):])
 
@@ -417,6 +493,7 @@ class HakaLLM:
             "deepseek": self.deepseek_api,
             "openai": self.openai,
             "openrouter": self.openrouter,
+            "openclaw": self.openclaw_gw,
         }
         return providers.get(provider_name)
 
